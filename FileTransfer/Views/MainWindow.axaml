@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800" 
+        x:Class="FileTransfer.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="FileTransfer"
+		Width="600"
+		Height="800">
+	<!--xmlns:vm="using:FileTransfer.ViewModels"-->
+    <!--<Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>-->
+
+
+	<StackPanel>
+		<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+		<Button HorizontalAlignment="Center"
+				Click="navigateToServer"
+				Width="80" 
+				Background="LightBlue"
+				FontSize="18"
+				x:Name="ServerBtn"
+				Margin="10,10,0,5">server</Button>
+		<Button HorizontalAlignment="Center"
+				Click="navigateToClient"
+				Width="80"
+				Background="LightBlue"
+				FontSize="18"
+				Margin="10,0,0,5">Client</Button>
+		<!--<HotKeyManager x:Key=""></HotKeyManager>-->
+	</StackPanel>
+
+</Window>

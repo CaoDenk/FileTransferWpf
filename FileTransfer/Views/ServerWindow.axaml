@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:FileTransfer.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+        x:Class="FileTransfer.Views.ServerWindow"
+        Title="ServerWindow"
+		Width="600"
+		Height="800">
+	<StackPanel x:Name="stackTag">
+		<WrapPanel HorizontalAlignment="Center">
+			<TextBlock Text="文件传输(服务端)" FontSize="18"  Margin="0,10" />
+			<!--<TextBlock   x:Name="Btn"
+						 Margin="5,10"
+						 Width="80"
+						 FontSize="18"
+						 Height="40"
+						 Foreground="Red"
+						 HorizontalAlignment="Center"
+						 VerticalAlignment="Center"
+						 Text="未连接" />-->
+		</WrapPanel>
+
+		<WrapPanel Margin="0,10">
+			<TextBlock Text="输入绑定端口"
+					   FontSize="20"
+					   Margin="10"/>
+			<TextBox Width="100"
+					 Text="{Binding Port}"
+					 Height="40"
+					 FontSize="20" />
+			<Button  Click="Bind"
+					 x:Name="BindBtn"
+					 Margin="20,5"
+					 Width="80"
+					 HorizontalAlignment="Center"
+					 HorizontalContentAlignment="Center"
+					 Height="40"
+					 FontSize="20"
+					 Background="Red">未绑定</Button>
+
+		</WrapPanel>
+
+
+		<!--<WrapPanel >
+			<Button   
+				Margin="0,5,10,5" 
+				Width="80" 
+				Click="ChooseFiles"
+				HorizontalAlignment="Center"  
+				HorizontalContentAlignment="Center" 
+				Background="LightBlue" >选择文件</Button>
+			<Button   Width="80" HorizontalAlignment="Center"  HorizontalContentAlignment="Center" Background="LightBlue" >发送文件</Button>
+		</WrapPanel>
+
+		<TextBlock Name="showfile"></TextBlock>
+		<TextBox    x:Name="Content" Watermark="input"  AcceptsReturn="True" FontFamily="Microsoft YaHei" FontSize="20" ></TextBox>
+
+
+		<Button   Margin="0,5" Width="80" HorizontalAlignment="Center"  HorizontalContentAlignment="Center" Background="LightBlue" >发送</Button>-->
+		<!--<Button Click="AddElement">add</Button>-->
+		
+	</StackPanel>
+</Window>
