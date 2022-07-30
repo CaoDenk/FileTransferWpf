@@ -2,6 +2,7 @@
 using FileTransfer.Tools;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -24,7 +25,7 @@ namespace FileTransfer.ViewModels
         public bool isConnected => socket.Connected;
         private Socket socket;
         private Socket endPointSocket;
-        byte[] buf = new byte[1024 * 1024 * 4];
+        byte[] buf = new byte[1024];
         public ChangeText changeText;
         ChangeColor changeColor;
         public ClientWindowViewModel(ChangeColor changeColor)
@@ -42,7 +43,31 @@ namespace FileTransfer.ViewModels
             }
             if (socket.Connected)
             {
-                socket.SendFileAsync(filePath[0]);
+                foreach(var file in filePath)
+                {
+                    Task task = new Task(
+                        () =>
+                        {
+                            FileInfo info = new FileInfo(file);
+                            FileStream fileStream=   File.OpenRead(file);
+                            byte[] bytes = new byte[1024 * 1024 * 4];
+                            BitConverter.TryWriteBytes(buf, 1);
+                            //Span<byte> span = new Span<byte>(bytes);
+                            
+                            int len=fileStream.Read(bytes, 4, bytes.Length);
+                            //fileStream.Read(bytes,3,)
+                            //bytes[3] = 1;
+                            //while((len=>)
+
+
+                        }
+                        );
+                   task.Start();
+
+
+                //socket.SendFileAsync(filePath[0]);
+                }
+         
             }
             else
             {
@@ -54,6 +79,7 @@ namespace FileTransfer.ViewModels
             if (s == null)
             {
                 MyMessage.show("error", "input is empty!");
+                return;
             }
 
             if (socket.Connected)
@@ -69,16 +95,17 @@ namespace FileTransfer.ViewModels
         public void accept()
         {
             socket.BeginAccept(asyncResult =>
-            {
-                changeColor(true);
+            {               
                 endPointSocket = socket.EndAccept(asyncResult);
+
+                changeColor(true);
                 beforeReceiveAsync(asyncResult);
             }, null);
 
         }
 
         /*
-         封装太多曾不利于将来维护，代码尽量简单
+         封装太多层不利于将来维护，代码尽量简单
          
          */
         //void endReceiveAsync(IAsyncResult asyncResult)  

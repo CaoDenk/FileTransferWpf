@@ -8,7 +8,7 @@ namespace FileTransfer.Models
 {
     internal enum FileType
     {
-
+        TEXT,
         DIR,
         FILE
     }

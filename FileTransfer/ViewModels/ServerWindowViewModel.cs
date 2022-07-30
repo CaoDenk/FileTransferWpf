@@ -80,13 +80,19 @@ namespace FileTransfer.ViewModels
         {
 
             EndPoint endPoint = new System.Net.IPEndPoint(IPAddress.Any, Port);
-            serverSocket.Bind(endPoint);
+            try
+            {
+                serverSocket.Bind(endPoint);
+            }catch(Exception e)
+            {
+                MyMessage.show("error", "can't bind the port,pls input anther port!");
+                return;
+            }
+        
             serverSocket.Listen(10);
             task = new Task(
-                () => {
-                  
-                        acceptMany();
-                  
+                () => {                 
+                        acceptMany();                 
                     }
                 );
             task.Start();

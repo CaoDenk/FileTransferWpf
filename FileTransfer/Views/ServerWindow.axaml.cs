@@ -71,8 +71,12 @@ namespace FileTransfer.Views
             {
                 //Button btn = (Button)sender;
                 serverWindowViewModel.Bind();
-                BindBtn.Background = Brush.Parse("LightBlue");
-                BindBtn.Content = "已绑定";
+                if(serverWindowViewModel.IsBound)
+                {
+                    BindBtn.Background = Brush.Parse("LightBlue");
+                    BindBtn.Content = "已绑定";
+                }
+             
             }
             else
                 MyMessage.show("warning", "socket has been bound!");

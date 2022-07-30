@@ -17,7 +17,7 @@ namespace FileTransfer.Models
     filename= ,
     filesize=
      */
-    internal class SendHandler
+    internal class SendHandle
     {
 
 
