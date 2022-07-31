@@ -48,13 +48,15 @@ namespace FileTransfer.ViewModels
                     Task task = new Task(
                         () =>
                         {
-                            FileInfo info = new FileInfo(file);
-                            FileStream fileStream=   File.OpenRead(file);
-                            byte[] bytes = new byte[1024 * 1024 * 4];
-                            BitConverter.TryWriteBytes(buf, 1);
-                            //Span<byte> span = new Span<byte>(bytes);
+
+                            //发送文件
+                            //FileInfo info = new FileInfo(file);
+                            //FileStream fileStream=   File.OpenRead(file);
+                            //byte[] bytes = new byte[1024 * 1024 * 4];
+                            //BitConverter.TryWriteBytes(buf, 1);
+                            ////Span<byte> span = new Span<byte>(bytes);
                             
-                            int len=fileStream.Read(bytes, 4, bytes.Length);
+                            //int len=fileStream.Read(bytes, 4, bytes.Length);
                             //fileStream.Read(bytes,3,)
                             //bytes[3] = 1;
                             //while((len=>)
@@ -92,17 +94,7 @@ namespace FileTransfer.ViewModels
                 MyMessage.show("error", "disconnected ");
             }
         }
-        public void accept()
-        {
-            socket.BeginAccept(asyncResult =>
-            {               
-                endPointSocket = socket.EndAccept(asyncResult);
 
-                changeColor(true);
-                beforeReceiveAsync(asyncResult);
-            }, null);
-
-        }
 
         /*
          封装太多层不利于将来维护，代码尽量简单
@@ -123,49 +115,30 @@ namespace FileTransfer.ViewModels
 
         //}
 
-        void beforeReceiveAsync(IAsyncResult asyncResult)
-        {
-            endPointSocket.BeginReceive(buf, 0, 1024, SocketFlags.None, asyncResult =>
-            {
-                try
-                {
-                    int len = endPointSocket.EndReceive(asyncResult);
-                    changeText(Encoding.Default.GetString(buf, 0, len));
-                    beforeReceiveAsync(asyncResult);
-                }
-                catch (Exception)
-                {
-                    Dispatcher.UIThread.Post(() => MyMessage.show("disconnected", "connection closed"));//在这捕获下，
-                    endPointSocket.Close();
-                    changeColor(false);
-                    accept();
-                }
-            }, null);
-
-        }
+   
 
 
         void receiveAsync()
         {
-            socket.BeginReceive(
-                 buf, 0, buf.Length, SocketFlags.None, asyncResult =>
-                 {
-                     try
-                     {
-                         int len = socket.EndReceive(asyncResult);
 
-                         Dispatcher.UIThread.Post(() => {
-                             changeText(Encoding.Default.GetString(buf, 0, len));
-                         });
-                         receiveAsync();
-                     }
-                     catch (Exception)
-                     {
-                         isSuddenlyDisconnected = true;
-                         changeColor(false);
-                     }
-                 }, null
-                 );
+            while (true)
+            {
+
+                try
+                {
+
+                    Task<int> recvTask = socket.ReceiveAsync(buf, SocketFlags.None);
+                    int len = recvTask.Result;
+                    string s = Encoding.Default.GetString(buf, 0, len);
+                    changeText(s);
+                }
+                catch (Exception e)
+                {
+                    socket.Close();
+                    changeColor(false);
+                    return;
+                }
+            }
 
         }
         public bool Connect()
@@ -179,15 +152,12 @@ namespace FileTransfer.ViewModels
 
             try
             {
-                if (isSuddenlyDisconnected)
-                {
-                    socket.Close();
-                }
+               
 
                 EndPoint endPoint = new System.Net.IPEndPoint(IPAddress.Parse(ip), port);
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(endPoint);
-                receiveAsync();
+                new Task(receiveAsync).Start();
 
             }
             catch (Exception e)
@@ -200,10 +170,8 @@ namespace FileTransfer.ViewModels
             return res;
         }
         public void CloseSocket()
-        {
-  
-            socket.Close();
-            
+        {  
+            socket.Close();     
         }
 
 

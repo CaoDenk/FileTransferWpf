@@ -21,7 +21,6 @@ namespace FileTransfer.ViewModels
         private Socket serverSocket;//服务端socket 
         //ChangeText changeText;
         StackPanel stackPanel;
-        //Action addElement;
         Task task;
         //List<Socket> clients = new List<Socket>();//储存客户端连接所产生的socket
         Dictionary <StackPanel, Socket> clientDict=new Dictionary<StackPanel,Socket>();
@@ -42,14 +41,13 @@ namespace FileTransfer.ViewModels
             while (true)
             {
 
-                Task<Socket>  task = serverSocket.AcceptAsync();
+                Task<Socket> mytask = serverSocket.AcceptAsync();
                 Socket client;
                 try
-                {
-                  client = task.Result;
+                {                
+                    client = mytask.Result;
                 }catch(Exception e)
                 {
-
                     return;
                 }
                 
@@ -58,20 +56,23 @@ namespace FileTransfer.ViewModels
                 clientDict.Add(panel, client);
                 try
                 {
+                    new Task(() =>
+                    {
+                        ReceiveAsyncByOneClient(client, panel);
+                    }).Start();
                    
-                    ReceiveAsyncByOneClient(client, panel);
                 }catch(Exception e)
                 {
-                    
-                    stackPanel.Children.Remove(panel);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        stackPanel.Children.Remove(panel);
+
+                    });
+
                     clientDict.Remove(panel);
                     client.Close();
-
-                    //throw e;
                 }
-                    
-              
-                
+                   
             }
         }
 
@@ -90,50 +91,39 @@ namespace FileTransfer.ViewModels
             }
         
             serverSocket.Listen(10);
-            task = new Task(
-                () => {                 
-                        acceptMany();                 
-                    }
-                );
+            task = new Task(acceptMany);
             task.Start();
         }
-        void  ReceiveAsyncByOneClient(Socket client,StackPanel panel)
+         void  ReceiveAsyncByOneClient(Socket client,StackPanel panel)
         {
             byte[] buf = new byte[1024];
-            client.BeginReceive(buf, 0, buf.Length, SocketFlags.None, asyncResult =>
+            while (true)
             {
-
+         
                 try
                 {
-                    int len = client.EndReceive(asyncResult);
-                    /*
-                     这添加代码使消息通过stackpanel里面的textblock显示
 
-
-                     */
-
-                    //changeText(Encoding.Default.GetString(buf, 0, len));
+                    Task<int> recvTask = client.ReceiveAsync(buf, SocketFlags.None);
+                    int len = recvTask.Result;
                     string s = Encoding.Default.GetString(buf, 0, len);
                     changeText(s, panel);
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     Dispatcher.UIThread.Post(
-                        () =>
-                        {
-                            stackPanel.Children.Remove(panel);
-                            clientDict.Remove(panel);
-                            client.Close();
-                            client.Close();
-                        });
-
+                   () =>
+                   {
+                       stackPanel.Children.Remove(panel);
+                   });
+                    CloseAndRemove(client, panel);
                     return;
-                    //throw e;
                 }
-               
-                ReceiveAsyncByOneClient(client,panel);
 
-            }, null);
 
+            }
+          
+         
+            //ReceiveAsyncByOneClient(client,panel);
         }
         private  StackPanel AddElement()
         {
@@ -146,8 +136,8 @@ namespace FileTransfer.ViewModels
             Dispatcher.UIThread.Post(
                 () =>
                     {
-                        TextBlock block= panel.FindByName<TextBlock>("ShowRecvText");
-                        block.Text = s;
+                        panel.FindByName<TextBlock>("ShowRecvText").Text=s;
+                        //block.Text = s;
                     }
                 );
 
@@ -156,7 +146,6 @@ namespace FileTransfer.ViewModels
         {
 
             Button btn = (Button)sender;
-
             StackPanel stackpanel = (StackPanel)btn.Parent;
             TextBox text= stackpanel.FindByName<TextBox>("Content");
             byte[] data = Encoding.Default.GetBytes(text.Text);
@@ -173,6 +162,12 @@ namespace FileTransfer.ViewModels
             }
 
             serverSocket.Close();
+        }
+
+        void CloseAndRemove(Socket client,StackPanel panel)
+        {
+            clientDict.Remove(panel);
+            client.Close();
         }
 
     }

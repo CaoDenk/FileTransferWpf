@@ -11,7 +11,7 @@ namespace FileTransfer.Models
         string fileName;
         ulong fileSize; //不可能出现超过int范围的文件，    
         //2^32 = 4G 一算好像还是真有可能的
-        int offset;//偏移量，从信息头偏移到数据中
+        int offset=0;//偏移量，从信息头偏移到数据中
         FileModel fileModel;
 
       public FileModel(string fileName, ulong fileSize, FileModel fileModel)
