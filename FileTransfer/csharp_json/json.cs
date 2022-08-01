@@ -20,12 +20,10 @@ namespace csharp_json
             {
                 // using(Stream s=new (path) )
                 //File f =  File.(path);
-                FileInfo fileInfo =new FileInfo(path);
+                FileInfo fileInfo = new FileInfo(path);
                 reader = new StreamReader(path);
                 buf = new char[bufferSize];
-       
-
-                len= reader.Read(buf,0, bufferSize);
+                len = reader.Read(buf, 0, bufferSize);
                 //reader.ReadBlock(buf, 0);
                 return true;
 
@@ -35,9 +33,10 @@ namespace csharp_json
 
         }
 
-        public void readFromBuf(byte[] buf,int offset)
+        public void readFromBuf(byte[] buf, int start,int end)
         {
-           this.buf= Encoding.Default.GetChars(buf, offset, buf.Length-offset);
+            this.buf = Encoding.Default.GetChars(buf, start, end);
+            len=this.buf.Length;    
         }
 
         public List<OneToken> tokens;
@@ -222,7 +221,7 @@ namespace csharp_json
                 {
                     bool intflag;
                     string res = readNumber(ref i, buf[i], out intflag);
-                    
+
                     if (intflag)
                     {
                         vs.Add(int.Parse(res));
@@ -271,6 +270,9 @@ namespace csharp_json
         {
             tokenize();
             int j = 0;
+
+            string s = new string(buf);
+
             switch (tokens.ElementAt(j).token)
             {
                 case Token.ARRAY_BEGIN:
@@ -421,7 +423,8 @@ namespace csharp_json
                 flag = nextToken.token == Token.COMMA || nextToken.token == Token.OBJECT_END || nextToken.token == Token.ARRAY_END;
 
             else if (currentToken == Token.COMMA)
-                flag = nextToken.token == Token.KEY_STRING;
+                flag = nextToken.token == Token.KEY_STRING
+                    || nextToken.token == Token.OBJECT_END;
             else if (currentToken == Token.KEY_STRING)
                 flag = nextToken.token == Token.COLON;
             else if (currentToken == Token.ARRAY_BEGIN)
@@ -542,6 +545,60 @@ namespace csharp_json
             if (key == "")
                 throw new Exception("key cannot be empty");
             dir.Add(key, value);
+        }
+        public override string ToString()
+        {
+            string res = "{";
+            int i = 0;
+            foreach (string s in dir.Keys)
+            {
+
+
+
+
+                Console.WriteLine(dir[s].GetType());
+                i++;
+                res += "\"" + s + "\":";
+
+                var jso = dir[s] as JsonObject;
+
+                if (jso != null)
+                {
+                    res += jso.ToString();
+                    if (dir.Keys.Count > i)
+                    {
+                        res += ",";
+                        continue;
+                    }
+                    else
+                        break;
+                }
+
+                var str = dir[s] as string;
+                if (str != null)
+                {
+                    res += "\"" + str + "\"";
+                    if (dir.Keys.Count > i)
+                    {
+                        res += ",";
+                        continue;
+                    }
+                    else
+                        break;
+                }
+
+                res += dir[s];
+                if (dir.Keys.Count > i)
+                {
+                    res += ",";
+                    continue;
+                }
+                else
+                    break;
+
+            }
+
+            return res + "}";
         }
     }
 }

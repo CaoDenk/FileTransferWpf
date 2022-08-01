@@ -79,7 +79,7 @@ namespace FileTransfer.ViewModels
 
             if (socket.Connected)
             {              
-                byte[] data = SendHandle.AddInfoHeader(s);
+                byte[] data = SendHandle.AddTextInfoHeader(s);
                 socket.SendAsync(data, SocketFlags.None);
             }
             else

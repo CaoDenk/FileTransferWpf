@@ -117,7 +117,9 @@ namespace FileTransfer.ViewModels
                             changeText(recvHandle.GetProcessedText(),panel);
                             break;
                         case InfoHeader.FILE:
-                            changeText(recvHandle.GetFileName(), panel);
+                            string s = recvHandle.GetFileName();
+                            recvHandle.FileHandle(s,client,len);
+                            //changeText(s, panel);
                             break;
                         default:
                             break;

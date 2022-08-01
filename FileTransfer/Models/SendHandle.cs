@@ -34,7 +34,7 @@ namespace FileTransfer.Models
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-        public static byte[] AddInfoHeader(string s)
+        public static byte[] AddTextInfoHeader(string s)
         {
             byte[] data = Encoding.Default.GetBytes(s);
             byte[] dest = new byte[data.Length +4];
@@ -43,15 +43,9 @@ namespace FileTransfer.Models
         }
         /// <summary>
         /// 文件添加文件信息头
+        /// buf的偏移量是绝对偏移量，直接偏移到数据所在位置，发送文件的时候顺序执行，将来断点续传的时候改用异步,加一个信息头，还得算偏移量，先发一个文件包，
         /// </summary>
-        /// <returns></returns>
-        //byte[] InfoHeaderToByte()
-        //{
-        //    StringBuilder sb = new StringBuilder();
-        //    string s = string.Format("{filename={0};filesize={1}}", fileName, fileSize);
-        //    return Encoding.Default.GetBytes(s);
-        //}
-
+        /// <returns></returns>  
         public void FileHandle(string filepath,Socket client)
         {
             FileStream fileStream = File.OpenRead(filepath);
@@ -61,20 +55,30 @@ namespace FileTransfer.Models
             Span<byte> buffer = new Span<byte>(buf);
             BitConverter.TryWriteBytes(buffer, 1);
             JsonObject jsonObject = new JsonObject();
-            string s = string.Format("{\"filename\"=\"{0}\",\"filesize=\"{1}\"}", fileInfo.Name, fileInfo.Length);
-            byte[] infobyte=Encoding.Default.GetBytes(s);
+            jsonObject.put("filename",fileInfo.Name);
+            jsonObject.put("filesize",fileInfo.Length);
+           
+            byte[] infobyte=Encoding.Default.GetBytes(jsonObject.ToString());
             BitConverter.TryWriteBytes(buffer[4..], infobyte.Length);
             Array.Copy(infobyte,0, buf, 8, infobyte.Length);//第一个int是数据类型，第二个int是信息头偏移的地址
             //fileStream.Read
             int offset = infobyte.Length + 8;
-            int readLenActually= fileStream.Read(buf, offset, bufsize - 8);//发送文件应该阻塞下，要不然和文本发送混在一起
-            client.Send(buf);//这必须是同步
-
-            while((readLenActually=fileStream.Read(buf))>0)
-            {
-                client.Send(buf,readLenActually,SocketFlags.None);
-            }
+            int readLenActually= fileStream.Read(buf, offset, bufsize - offset);//发送文件应该阻塞下，要不然和文本发送混在一起
+            //client.Send(buf);//这必须是同步
             
+            client.Send(buf);
+            if(readLenActually+offset<bufsize)
+            {
+
+            }
+            //string str = Encoding.Default.GetString(buf);
+            ////Console.Write(Encoding.Default.GetString(buf));
+            while ((readLenActually = fileStream.Read(buf)) > 0)
+            {
+                Span<byte> span = new Span<byte>(buf);
+                client.Send(span[0..readLenActually], SocketFlags.None);
+            }
+
 
         }
 
