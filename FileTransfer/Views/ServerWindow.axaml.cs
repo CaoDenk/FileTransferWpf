@@ -32,36 +32,7 @@ namespace FileTransfer.Views
         //    AvaloniaXamlLoader.Load(this);
         //}
 
-        //public void changeText(string s)
-        //{
 
-        //    Dispatcher.UIThread.Post(() => {
-        //        showfile.Text = s;
-
-        //    });
-        //}
-
-        public void changeBtnColor(bool connected)
-        {
-            //if (connected)
-            //{
-            //    Dispatcher.UIThread.Post(() => {
-            //        Btn.Foreground = Brush.Parse("LightBlue");
-            //        Btn.Text = "已连接";
-            //    });
-
-            //}
-            //else
-            //{
-            //    Dispatcher.UIThread.Post(() => {
-            //        Btn.Foreground = Brush.Parse("Red");
-            //        Btn.Text = "未连接";
-
-            //    });
-
-            //}
-            
-        }
 
         private void Bind(object sender, RoutedEventArgs e)
         {

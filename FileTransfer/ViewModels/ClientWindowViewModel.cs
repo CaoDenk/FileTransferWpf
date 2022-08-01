@@ -1,12 +1,8 @@
-﻿using Avalonia.Threading;
+﻿using FileTransfer.Models;
 using FileTransfer.Tools;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FileTransfer.ViewModels
@@ -18,13 +14,11 @@ namespace FileTransfer.ViewModels
         public string Ip{ get { return ip; } set { ip = value; } }
         int port = 8081;
         public int Port{ get { return port; } set { port = value; } }
-
         public delegate void ChangeText(string s);
         public delegate void ChangeColor(bool b);
-        bool isSuddenlyDisconnected = false;
+
         public bool isConnected => socket.Connected;
         private Socket socket;
-        private Socket endPointSocket;
         byte[] buf = new byte[1024];
         public ChangeText changeText;
         ChangeColor changeColor;
@@ -43,8 +37,10 @@ namespace FileTransfer.ViewModels
             }
             if (socket.Connected)
             {
-                foreach(var file in filePath)
+                SendHandle sendHandle = new SendHandle();
+                foreach (var file in filePath)
                 {
+                  
                     Task task = new Task(
                         () =>
                         {
@@ -55,19 +51,16 @@ namespace FileTransfer.ViewModels
                             //byte[] bytes = new byte[1024 * 1024 * 4];
                             //BitConverter.TryWriteBytes(buf, 1);
                             ////Span<byte> span = new Span<byte>(bytes);
-                            
+
                             //int len=fileStream.Read(bytes, 4, bytes.Length);
                             //fileStream.Read(bytes,3,)
                             //bytes[3] = 1;
                             //while((len=>)
-
-
+                            //socket.SendFileAsync(filePath[0]);
+                            sendHandle.FileHandle(file, socket);
                         }
                         );
                    task.Start();
-
-
-                //socket.SendFileAsync(filePath[0]);
                 }
          
             }
@@ -85,8 +78,8 @@ namespace FileTransfer.ViewModels
             }
 
             if (socket.Connected)
-            {
-                byte[] data = Encoding.Default.GetBytes(s);
+            {              
+                byte[] data = SendHandle.AddInfoHeader(s);
                 socket.SendAsync(data, SocketFlags.None);
             }
             else
@@ -95,27 +88,6 @@ namespace FileTransfer.ViewModels
             }
         }
 
-
-        /*
-         封装太多层不利于将来维护，代码尽量简单
-         
-         */
-        //void endReceiveAsync(IAsyncResult asyncResult)  
-        //{
-        //    try
-        //    {
-        //        int len = endPointSocket.EndReceive(asyncResult);
-
-        //        changeText(Encoding.Default.GetString(buf, 0, len));
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw e;
-        //    }
-
-        //}
-
-   
 
 
         void receiveAsync()
@@ -129,8 +101,21 @@ namespace FileTransfer.ViewModels
 
                     Task<int> recvTask = socket.ReceiveAsync(buf, SocketFlags.None);
                     int len = recvTask.Result;
-                    string s = Encoding.Default.GetString(buf, 0, len);
-                    changeText(s);
+                    RecvHandle recvHandle=new RecvHandle(buf,len);
+                    
+                    switch(recvHandle.GetDataType())
+                    {
+                        case InfoHeader.TEXT:
+                            changeText(recvHandle.GetProcessedText());
+                            break;
+                        case InfoHeader.FILE:
+                            break;
+                        default:
+                            break;
+                    }
+
+                    //string s = Encoding.Default.GetString(buf, 4, len-4);
+                    //changeText(s);
                 }
                 catch (Exception e)
                 {
@@ -141,6 +126,10 @@ namespace FileTransfer.ViewModels
             }
 
         }
+        /// <summary>
+        /// 连接服务端socket
+        /// </summary>
+        /// <returns></returns>
         public bool Connect()
         {
             
@@ -153,7 +142,6 @@ namespace FileTransfer.ViewModels
             try
             {
                
-
                 EndPoint endPoint = new System.Net.IPEndPoint(IPAddress.Parse(ip), port);
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(endPoint);

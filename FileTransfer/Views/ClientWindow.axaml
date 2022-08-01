@@ -41,9 +41,13 @@
 				HorizontalAlignment="Center"  
 				HorizontalContentAlignment="Center" 
 				Background="LightBlue" >选择文件</Button>
-			<Button  Width="80" HorizontalAlignment="Center"  HorizontalContentAlignment="Center" Background="LightBlue" >发送文件</Button>
+			<Button  Click="SendFiles"
+				Width="80" 
+				HorizontalAlignment="Center"  
+				HorizontalContentAlignment="Center" 
+				Background="LightBlue" >发送文件</Button>
 		</WrapPanel>
-		<TextBlock Name="showfile"></TextBlock>
+		<TextBlock Name="ShowFile"></TextBlock>
 		<TextBox    x:Name="Content" Watermark="input"  AcceptsReturn="True" FontFamily="Microsoft YaHei" FontSize="20" ></TextBox>
 		<Button  Margin="0,5" Width="80" 
 				 Click="SendText"

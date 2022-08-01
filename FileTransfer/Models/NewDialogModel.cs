@@ -14,24 +14,14 @@ namespace FileTransfer.Models
     internal class NewDialogModel
     {
 
-        //StackPanel wrapeStackPanel;
-        //public StackPanel GetStackPanel { get { return wrapeStackPanel; } }
-        //Event @event;
-        //public NewDialogModel(EventHandler @event)
-        //{
-
-
-        //    this.@event = @event;
-
-
-        //}
-        //public delegate void Event(object sender, Avalonia.Interactivity.RoutedEventArgs e);
+      /// <summary>
+      /// 添加元素到指定容器，包括按钮，输入框
+      /// </summary>
+      /// <param name="panel"></param>
+      /// <param name="event"></param>
+      /// <returns></returns>
         public  StackPanel AddElement(StackPanel panel, EventHandler<RoutedEventArgs> @event)
         {
-          
-
-           
-            //this.wrapeStackPanel = wrapeStackPanel;
 
 
            Task<StackPanel> task= Dispatcher.UIThread.InvokeAsync<StackPanel>(() =>
@@ -62,10 +52,6 @@ namespace FileTransfer.Models
                 Button sendText = new Button();
                 sendText.Content = "发送";
 
-                //sendText.AddHandler(, @event);
-                //sendText.Click += SendText_Click; 
-
-                
                 sendText.Click += @event;
                 //Type t =SendText_Click
                 wrapeStackPanel.Children.Add(sendText);
@@ -77,22 +63,7 @@ namespace FileTransfer.Models
             return task.Result;
         }
 
-        //private void SendText_Click(object sender, RoutedEventArgs e)
-        //{
-        //    //MyMessage.show("alert","alert");
-        //    @event(sender, e);
-        //}
-
-
-
-
-        //void addEvent()
-        //{
-
-        //    IControl control = wrapeStackPanel.Children[0];
-        //    _ = control.Bounds;
-        //}
-
+   
 
     }
 }

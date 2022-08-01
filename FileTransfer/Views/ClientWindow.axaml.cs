@@ -16,6 +16,7 @@ namespace FileTransfer.Views
     public partial class ClientWindow : Window
     {
         ClientWindowViewModel clientWindowViewModel;
+        string[] upfiles;
         public ClientWindow()
         {
             InitializeComponent();
@@ -34,17 +35,22 @@ namespace FileTransfer.Views
 
         private void Connect(object sender, RoutedEventArgs e)
         {
-            if(clientWindowViewModel.Connect())
+            if (clientWindowViewModel.Connect())
             {
                 changeBtnColor(true);
             }
 
         }
+        /// <summary>
+        /// œ‘ æƒ⁄»›µΩTextBlock
+        /// </summary>
+        /// <param name="s"></param>
         public void changeContent(string s)
         {
 
-            Dispatcher.UIThread.Post(() => {
-                showfile.Text = s;
+            Dispatcher.UIThread.Post(() =>
+            {
+                ShowFile.Text = s;
 
             });
         }
@@ -72,19 +78,23 @@ namespace FileTransfer.Views
         public void ChooseFiles(object sender,RoutedEventArgs e)
         {
             ChooseFiles choose = new();
-            string[] res=  choose.open(this);
-            if (res == null)
+            upfiles =  choose.open(this);
+            if (upfiles == null)
                 return;
             string s = "";
-            foreach (string s2 in res)
+            foreach (string s2 in upfiles)
             {
                 s += s2 + "\r\n";
             }
-            showfile.Text=s;
+            ShowFile.Text=s;
         }
         private void SendText(object sender, RoutedEventArgs e)
         {
             clientWindowViewModel.sendText(Content.Text);
+        }
+        private void SendFiles(object sender, RoutedEventArgs e)
+        {
+            clientWindowViewModel.sendFile(upfiles);
         }
         protected override void OnClosing(CancelEventArgs e)
         {

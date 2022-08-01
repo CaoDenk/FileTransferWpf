@@ -31,10 +31,9 @@ namespace FileTransfer.ViewModels
             this.stackPanel = stackPanel;
         }
 
-        /**
-         创建StackPanel  并将socket和 stackpanel 绑定 
-         
-         */
+      /// <summary>
+      /// 同时接受多个请求
+      /// </summary>
          void acceptMany()
         {
          
@@ -94,7 +93,12 @@ namespace FileTransfer.ViewModels
             task = new Task(acceptMany);
             task.Start();
         }
-         void  ReceiveAsyncByOneClient(Socket client,StackPanel panel)
+        /// <summary>
+        /// 异步接受文本数据，偏移四个字节
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="panel"></param>
+         async void  ReceiveAsyncByOneClient(Socket client,StackPanel panel)
         {
             byte[] buf = new byte[1024];
             while (true)
@@ -102,11 +106,24 @@ namespace FileTransfer.ViewModels
          
                 try
                 {
-
-                    Task<int> recvTask = client.ReceiveAsync(buf, SocketFlags.None);
+                    Task.Delay(1000);
+                    Task<int> recvTask =  client.ReceiveAsync(buf, SocketFlags.None);
                     int len = recvTask.Result;
-                    string s = Encoding.Default.GetString(buf, 0, len);
-                    changeText(s, panel);
+                    RecvHandle recvHandle = new RecvHandle(buf, len);
+
+                    switch (recvHandle.GetDataType())
+                    {
+                        case InfoHeader.TEXT:
+                            changeText(recvHandle.GetProcessedText(),panel);
+                            break;
+                        case InfoHeader.FILE:
+                            changeText(recvHandle.GetFileName(), panel);
+                            break;
+                        default:
+                            break;
+                    }
+                    //string s = Encoding.Default.GetString(buf, 4, len-4);//偏移4个字节
+                    //changeText(s, panel);
                 }
                 catch (Exception e)
                 {
@@ -121,38 +138,47 @@ namespace FileTransfer.ViewModels
 
 
             }
-          
-         
-            //ReceiveAsyncByOneClient(client,panel);
         }
         private  StackPanel AddElement()
         {
             NewDialogModel newDialogModel = new NewDialogModel(); ;
             return newDialogModel.AddElement(stackPanel, sendText); ;
         }
-   
+
+      
+        /// <summary>
+        /// 显示内容到界面指定的元素容器
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="panel"></param>
         private void changeText(string s,StackPanel panel) 
         {
             Dispatcher.UIThread.Post(
                 () =>
                     {
-                        panel.FindByName<TextBlock>("ShowRecvText").Text=s;
-                        //block.Text = s;
+                        panel.FindByName<TextBlock>("ShowRecvText").Text = s;
                     }
                 );
 
         }
+     
+        /// <summary>
+        /// 发送文本事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void sendText(object sender, RoutedEventArgs e)
         {
 
             Button btn = (Button)sender;
             StackPanel stackpanel = (StackPanel)btn.Parent;
             TextBox text= stackpanel.FindByName<TextBox>("Content");
-            byte[] data = Encoding.Default.GetBytes(text.Text);
+            byte[] data = SendHandle.AddInfoHeader(text.Text);
             clientDict[stackpanel].SendAsync(data,SocketFlags.None);
-
         }
-
+        /// <summary>
+        /// 先关闭客户端，使其断开，再关闭服务端
+        /// </summary>
         public void CloseSocket()
         {
             foreach (StackPanel s in clientDict.Keys)
