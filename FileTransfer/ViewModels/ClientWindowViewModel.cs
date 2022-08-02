@@ -19,7 +19,9 @@ namespace FileTransfer.ViewModels
 
         public bool isConnected => socket.Connected;
         private Socket socket;
-        byte[] buf = new byte[1024];
+
+       
+
         public ChangeText changeText;
         ChangeColor changeColor;
         public ClientWindowViewModel(ChangeColor changeColor)
@@ -57,7 +59,12 @@ namespace FileTransfer.ViewModels
                             //bytes[3] = 1;
                             //while((len=>)
                             //socket.SendFileAsync(filePath[0]);
-                            sendHandle.FileHandle(file, socket);
+                            byte[] buf = new byte[Config.TextBufSize];
+                            sendHandle.AddFileInfoHeaderAndSendFile(socket,file, buf);
+                            //socket.Send(buf);//发送信息头，
+
+                            //socket.SendFile(file);
+                            //sendHandle.FileHandle(file, socket);
                         }
                         );
                    task.Start();
@@ -98,7 +105,7 @@ namespace FileTransfer.ViewModels
 
                 try
                 {
-
+                    byte[] buf = new byte[Config.TextBufSize];
                     Task<int> recvTask = socket.ReceiveAsync(buf, SocketFlags.None);
                     int len = recvTask.Result;
                     RecvHandle recvHandle=new RecvHandle(buf,len);

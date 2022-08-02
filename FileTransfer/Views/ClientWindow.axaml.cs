@@ -77,7 +77,7 @@ namespace FileTransfer.Views
         }
         public void ChooseFiles(object sender,RoutedEventArgs e)
         {
-            ChooseFiles choose = new();
+            MyFiles choose = new MyFiles();
             upfiles =  choose.open(this);
             if (upfiles == null)
                 return;
@@ -94,6 +94,7 @@ namespace FileTransfer.Views
         }
         private void SendFiles(object sender, RoutedEventArgs e)
         {
+            ShowSendingProcess.IsVisible = true;
             clientWindowViewModel.sendFile(upfiles);
         }
         protected override void OnClosing(CancelEventArgs e)

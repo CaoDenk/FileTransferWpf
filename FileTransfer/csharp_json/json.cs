@@ -176,6 +176,9 @@ namespace csharp_json
                 builder.Append(buf[i]);
                 i++;
             }
+            //if(buf[i] == 'L' || buf[i]=='l')
+
+
             if (buf[i] == '.')
             {
                 intFlag = false;

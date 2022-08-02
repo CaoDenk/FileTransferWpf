@@ -47,6 +47,7 @@
 				HorizontalContentAlignment="Center" 
 				Background="LightBlue" >发送文件</Button>
 		</WrapPanel>
+		<ProgressBar ShowProgressText="true" IsVisible="False" x:Name="ShowSendingProcess"/>
 		<TextBlock Name="ShowFile"></TextBlock>
 		<TextBox    x:Name="Content" Watermark="input"  AcceptsReturn="True" FontFamily="Microsoft YaHei" FontSize="20" ></TextBox>
 		<Button  Margin="0,5" Width="80" 

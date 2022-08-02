@@ -22,7 +22,7 @@ namespace FileTransfer.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
-            serverWindowViewModel = new ServerWindowViewModel(stackTag);
+            serverWindowViewModel = new ServerWindowViewModel(stackTag,this);
             DataContext = serverWindowViewModel;
 
         }

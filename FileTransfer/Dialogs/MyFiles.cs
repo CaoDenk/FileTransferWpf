@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FileTransfer.Dialogs
 {
-    internal class ChooseFiles
+    internal class MyFiles
     {
 
         //public ChooseFiles(Window parent)
@@ -16,7 +16,7 @@ namespace FileTransfer.Dialogs
         //}
         public string[] open(Window parent)
         {
-
+           
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "选择文件";
             openFileDialog.AllowMultiple = true;
@@ -24,5 +24,22 @@ namespace FileTransfer.Dialogs
            
             return files.Result;
         }
+        public  string save(Window parent,string path)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.InitialFileName = path;
+
+            Task<string> filepath=    saveFileDialog.ShowAsync(parent);
+            return filepath.Result;
+
+        }
+
+
     }
+
+
+
+     
+   
+
 }
