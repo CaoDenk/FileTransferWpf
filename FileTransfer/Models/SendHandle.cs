@@ -120,7 +120,7 @@ namespace FileTransfer.Models
             while (true)
             {         
                 len=   fileStream.Read(fileBuf, offset, fileBuf.Length-offset);
-                fileStream.Flush();
+                //fileStream.Flush();
                 //totalSize += len;
                 if (len==Config.FileBufSize-offset)
                 {
@@ -132,7 +132,7 @@ namespace FileTransfer.Models
                 {
                     AddFileType(fileBuf, InfoHeader.SEND_FINISHED, 0);                
                     AddFileType(fileBuf, packageOrder, 4);
-                    AddFileType(fileBuf, len, 16);
+                    AddFileType(fileBuf, len, 8);
                     client.Send(fileBuf);
                     
                     fileStream.Close();

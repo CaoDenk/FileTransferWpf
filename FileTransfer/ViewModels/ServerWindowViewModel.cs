@@ -138,19 +138,21 @@ namespace FileTransfer.ViewModels
                             //totalSize += len ;
                          
                             fileStream.Write(buf, 16, len-16);
-                            fileStream.Flush();
+                            //fileStream.Flush();
                             break;
                         case InfoHeader.SEND_FINISHED:
                             ints.Add(BitConverter.ToInt32(buf[4..]));
-                            int size = BitConverter.ToInt32(buf[16..]);
+                            int size = BitConverter.ToInt32(buf[8..]);
                           //  totalSize += size;
-                            fileStream.Write(buf, 20, size);
+                            
+                            fileStream.Write(buf, 16, size);
                             fileStream.Flush();
                             fileStream.Close();
+                            ints.Clear();
                             break;
                         default:
-                            //throw new Exception("info error");
-                            break;
+                            throw new Exception("info error");
+                            //break;
                     }
                     //string s = Encoding.Default.GetString(buf, 4, len-4);//偏移4个字节
                     //changeText(s, panel);

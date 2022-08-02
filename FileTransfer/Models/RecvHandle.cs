@@ -111,9 +111,8 @@ namespace FileTransfer.Models
                 if(type==InfoHeader.SEND_FINISHED)
                 {
 
-                    int size = BitConverter.ToInt32(buf[4..]);
-                    fileStream.Write(buf,16,size);
-              
+                    int size = BitConverter.ToInt32(buf[8..]);
+                    fileStream.Write(buf,16,size);             
                     break;
                 };
 
