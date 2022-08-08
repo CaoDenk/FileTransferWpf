@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FileTransfer.ViewModels;
 using FileTransfer.Views;
+using FileTransfer;
 
 namespace FileTransfer
 {

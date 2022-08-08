@@ -1,174 +1,230 @@
-﻿using FileTransfer.Models;
+﻿using FileTransfer.GlobalConfig;
+using FileTransfer.Header;
+using FileTransfer.Models;
 using FileTransfer.Tools;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FileTransfer.ViewModels
 {
-    internal class ClientWindowViewModel
+    internal class ClientWindowViewModel:INotifyPropertyChanged
     {
 
-        string ip="127.0.0.1";
-        public string Ip{ get { return ip; } set { ip = value; } }
-        int port = 8081;
-        public int Port{ get { return port; } set { port = value; } }
-        public delegate void ChangeText(string s);
-        public delegate void ChangeColor(bool b);
+        Client client = new Client();
 
-        public bool isConnected => socket.Connected;
-        private Socket socket;
+        public Dictionary<byte[], UUIDSendFileModel> uuidSendDict = new Dictionary<byte[], UUIDSendFileModel>(new ByteCmp());
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-       
+        public string Ip { get { return client.Ip; } set { client.Ip = value; } }
+        public int Port { get { return client.Port; } set { client.Port = value; } }
+        public Socket ClientSocket { get { return client.ClientSocket; } set { client.ClientSocket = value; } }
 
-        public ChangeText changeText;
-        ChangeColor changeColor;
-        public ClientWindowViewModel(ChangeColor changeColor)
+        public string TextInput { get; set; } = "";
+        public bool IsConnected => ClientSocket.Connected;
+
+        // List<string> 
+
+        string content;
+        public string ShowContent
         {
-            this.changeColor = changeColor;
-        }
-
-
-        public void sendFile(string[] filePath)
-        {
-            if (filePath == null)
+            get { return content; }
+            set
             {
-                MyMessage.show("error", "file is empty!");
-                return;
-            }
-            if (socket.Connected)
-            {
-                SendHandle sendHandle = new SendHandle();
-                foreach (var file in filePath)
-                {
-                  
-                    Task task = new Task(
-                        () =>
-                        {
-
-                            //发送文件
-                            //FileInfo info = new FileInfo(file);
-                            //FileStream fileStream=   File.OpenRead(file);
-                            //byte[] bytes = new byte[1024 * 1024 * 4];
-                            //BitConverter.TryWriteBytes(buf, 1);
-                            ////Span<byte> span = new Span<byte>(bytes);
-
-                            //int len=fileStream.Read(bytes, 4, bytes.Length);
-                            //fileStream.Read(bytes,3,)
-                            //bytes[3] = 1;
-                            //while((len=>)
-                            //socket.SendFileAsync(filePath[0]);
-                            byte[] buf = new byte[Config.TextBufSize];
-                            sendHandle.AddFileInfoHeaderAndSendFile(socket,file, buf);
-                            //socket.Send(buf);//发送信息头，
-
-                            //socket.SendFile(file);
-                            //sendHandle.FileHandle(file, socket);
-                        }
-                        );
-                   task.Start();
-                }
-         
-            }
-            else
-            {
-                MyMessage.show("error", "disconnected!");
-            }
-        }
-        public void sendText(string s)
-        {
-            if (s == null)
-            {
-                MyMessage.show("error", "input is empty!");
-                return;
-            }
-
-            if (socket.Connected)
-            {              
-                byte[] data = SendHandle.AddTextInfoHeader(s);
-                socket.SendAsync(data, SocketFlags.None);
-            }
-            else
-            {
-                MyMessage.show("error", "disconnected ");
+                content = value;
+                PropertyChanged(this, new PropertyChangedEventArgs("ShowContent"));
             }
         }
 
 
 
-        void receiveAsync()
+        public void Connect(ChangeBtnColor changeBtnColor)
         {
-
-            while (true)
+            EndPoint endPoint = new IPEndPoint(IPAddress.Parse(Ip), Port);
+            try
             {
-
-                try
-                {
-                    byte[] buf = new byte[Config.TextBufSize];
-                    Task<int> recvTask = socket.ReceiveAsync(buf, SocketFlags.None);
-                    int len = recvTask.Result;
-                    RecvHandle recvHandle=new RecvHandle(buf,len);
-                    
-                    switch(recvHandle.GetDataType())
-                    {
-                        case InfoHeader.TEXT:
-                            changeText(recvHandle.GetProcessedText());
-                            break;
-                        case InfoHeader.FILE:
-                            break;
-                        default:
-                            break;
-                    }
-
-                    //string s = Encoding.Default.GetString(buf, 4, len-4);
-                    //changeText(s);
-                }
-                catch (Exception e)
-                {
-                    socket.Close();
-                    changeColor(false);
-                    return;
-                }
+                ClientSocket.Connect(endPoint);
+                //绑定后开始接收
+                Recv(changeBtnColor);
+                changeBtnColor(true);
+            }
+            catch (Exception e)
+            {
+                MyMessageBox.Show("error",e.Message);
             }
 
         }
         /// <summary>
-        /// 连接服务端socket
+        /// 发送文本
         /// </summary>
-        /// <returns></returns>
-        public bool Connect()
+        public void SendText()
         {
-            
-            if(socket!=null&&socket.Connected)
-            {
-                MyMessage.show("warning", "socked has been connected!,don't repeat the opetation!");
-                return true;
-            }
-
-            try
-            {
-               
-                EndPoint endPoint = new System.Net.IPEndPoint(IPAddress.Parse(ip), port);
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                socket.Connect(endPoint);
-                new Task(receiveAsync).Start();
-
-            }
-            catch (Exception e)
-            {
-                //MyMessage.show("error", e.Message);
-               
-                return false;
-            }
-            bool res=socket.Connected;
-            return res;
+            SendHandle.AddTextInfoHeader(TextInput);
+            byte[] data = SendHandle.AddTextInfoHeader(TextInput);
+            ClientSocket.SendAsync(data, SocketFlags.None);
         }
-        public void CloseSocket()
-        {  
-            socket.Close();     
+        /// <summary>
+        /// 发送"发送文件请求"
+        /// </summary>
+        /// <param name="file"></param>
+        public void SendFileRequest(string[] fullFilePaths)
+        {
+
+
+            foreach (string fullFilePath in fullFilePaths)
+            {
+
+                string uuid = Guid.NewGuid().ToString()[0..8];
+
+                UUIDSendFileModel uUIDSendFileModel = new UUIDSendFileModel();
+                uUIDSendFileModel.filepath = fullFilePath;
+                //uUIDSendFileModel.
+                uuidSendDict.Add(Encoding.UTF8.GetBytes(uuid), uUIDSendFileModel);
+
+                byte[] data = SendHandle.AddSendFileInfoHead(fullFilePath, uuid);
+                ClientSocket.Send(data, SocketFlags.None);
+            }
+
         }
 
+        //void SendFileRequest(string fullFilePath)
+        //{
+
+        //    string uuid = Guid.NewGuid().ToString()[0..8];
+
+        //    UUIDSendFileModel uUIDSendFileModel = new UUIDSendFileModel();
+        //    uUIDSendFileModel.filepath = fullFilePath;
+        //    //uUIDSendFileModel.
+        //    uuidSendDict.Add(Encoding.UTF8.GetBytes(uuid), uUIDSendFileModel);
+
+        //    byte[] data = SendHandle.AddSendFileInfoHead(fullFilePath, uuid);
+        //    ClientSocket.Send(data, SocketFlags.None);
+
+
+        //}
+
+        /// <summary>
+        /// 接受请求
+        /// </summary>
+        public void Recv(ChangeBtnColor changeBtnColor)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                byte[] buf = new byte[Config.FILE_BUFFER_SIZE];
+                while (true)
+                {
+                    try
+                    {
+                        int len = ClientSocket.Receive(buf);
+                        int type = RecvHandle.GetDataType(buf);
+                        byte[] uuidBytes = null;
+                        switch (type)
+                        {
+                            case InfoHeader.TEXT:
+                                ShowContent = RecvHandle.GetProcessedText(buf, len);
+                                break;
+                            case InfoHeader.FILE:
+                                MyMessageBox.Show("是否接收文件", "消息", MessageBoxButton.YesNo);
+                                break;
+                            case InfoHeader.ALLOW_RECV:
+                                uuidBytes = buf[8..16];
+                                string filepath = uuidSendDict[uuidBytes].filepath;
+                                FileStream fileStream = File.OpenRead(filepath);
+                                uuidSendDict[uuidBytes].stream = fileStream;
+                                goto case InfoHeader.OK_RECV;
+                            case InfoHeader.RESEND_PACK:
+                                uuidBytes = buf[8..16];
+                                long offset = BitConverter.ToInt64(buf, 16);
+                                ResendPack(uuidBytes, offset);
+                                SendFile(uuidBytes, buf);
+                                break;
+
+                            case InfoHeader.CLOSE_SEND:
+                                uuidBytes = buf[8..16];
+                                MyMessageBox.Show("info","发送完成");
+                                uuidSendDict[uuidBytes].stream.Close();
+                                uuidSendDict.Remove(uuidBytes);
+                                break;
+                            case InfoHeader.OK_RECV:
+                                uuidBytes = buf[8..16];
+                                uuidSendDict[uuidBytes].packnum++;
+                                SendFile(uuidBytes, buf);
+                                break;
+                            case InfoHeader.REFUSE_RECV:
+                                uuidBytes = buf[8..16];
+                                uuidSendDict.Remove(uuidBytes);
+                                break;
+                            default:
+                                throw new Exception("错误信息头");
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        changeBtnColor(false);
+                        CloseIOStream();
+                        uuidSendDict.Clear();
+                        ClientSocket.Close();
+                        ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        break;
+                    }
+
+                }
+
+            }
+            );
+
+        }
+        public void SendFile(byte[] uuidByte, byte[] filebuf)
+        {
+
+            FileStream fileStream = uuidSendDict[uuidByte].stream;
+            //Thread.Sleep(10);
+            int len;
+            if ((len = fileStream.Read(filebuf, 16, Config.FULL_SIZE)) > 0)
+            {
+                SendHandle.AddContinueRecv(filebuf, uuidSendDict[uuidByte].packnum);
+                Array.Copy(uuidByte, 0, filebuf, 8, 8);
+                ClientSocket.Send(filebuf, 0, len + 16, SocketFlags.None);
+
+            }
+            else
+            {
+                ClientSocket.Send(SendHandle.SendFinished(uuidByte), SocketFlags.None);
+            }
+
+        }
+
+        /// <summary>
+        /// 重新发送下文件
+        /// </summary>
+        /// <param name="uuidBytes"></param>
+        /// <param name="offset"></param>
+        void ResendPack(byte[] uuidBytes, long offset)
+        {
+            uuidSendDict[uuidBytes].stream.Seek(offset, SeekOrigin.Begin);
+        }
+        public void Close()
+        {
+
+            CloseIOStream();
+            ClientSocket.Close();
+
+        }
+
+        void CloseIOStream()
+        {
+
+            foreach (UUIDSendFileModel uUIDSendFileModel in uuidSendDict.Values)
+            {
+                uUIDSendFileModel.stream?.Close();
+            }
+        }
 
 
     }

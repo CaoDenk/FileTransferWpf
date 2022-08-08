@@ -1,6 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using FileTransfer.Tools;
+using Avalonia.Markup.Xaml;
 using FileTransfer.ViewModels;
 
 namespace FileTransfer.Views
@@ -11,30 +12,32 @@ namespace FileTransfer.Views
         public MainWindow()
         {
             InitializeComponent();
+#if DEBUG
+            this.AttachDevTools();
+#endif
             mainWindowViewModel = new MainWindowViewModel();
             DataContext = mainWindowViewModel;
-           
         }
 
-        private void navigateToClient(object sender, RoutedEventArgs e)
+        private void InitializeComponent()
         {
-            ClientWindow client = new();
-            client.Show();
+            AvaloniaXamlLoader.Load(this);
         }
 
-        private void navigateToServer(object sender, RoutedEventArgs e)
+
+
+        private void NavicateToClientWindow(object sender, RoutedEventArgs e)
         {
-            //MyMessage.show("≤‚ ‘"," «∑Ò¬“¬Î");
-            //if(ServerBtn==null)
-            //{
+            ClientWindow clientWindow = new ClientWindow();
+            clientWindow.Show();
 
-            //}
-            //if(server.ISC)
-            
-
-            ServerWindow server = new ServerWindow();
-            server.Show();
 
         }
+        private void NavicateToServerWindow(object sender, RoutedEventArgs e)
+        {
+            ServerWindow serverWindow = new ServerWindow();
+            serverWindow.Show();
+        }
+
     }
 }
