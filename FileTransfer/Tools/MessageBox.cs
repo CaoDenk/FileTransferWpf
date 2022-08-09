@@ -1,4 +1,6 @@
-﻿namespace FileTransfer.Tools
+﻿using Avalonia.Threading;
+
+namespace FileTransfer.Tools
 {
     internal class MyMessageBox
     {
@@ -6,10 +8,13 @@
         public static MessageBoxResult Show(string title, string info)
         {
 
-            
-            var msg = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(title, info);
+            Dispatcher.UIThread.Post(() =>
+            {
+                var msg = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(title, info);
 
-            msg.Show();
+                msg.Show();
+            });
+           
             return MessageBoxResult.OK;
         }
         public static MessageBoxResult Show(string title, string info, MessageBoxButton boxButton)

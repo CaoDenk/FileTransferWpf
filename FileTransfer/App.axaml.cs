@@ -11,7 +11,7 @@ namespace FileTransfer
     {
         public override void Initialize()
         {
-            //System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            
             AvaloniaXamlLoader.Load(this);
         }
 

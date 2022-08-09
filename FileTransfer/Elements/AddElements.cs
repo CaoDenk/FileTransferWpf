@@ -4,8 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
-
-
+using FileTransfer.Models;
 
 namespace FileTransfer.Elements
 {
@@ -18,11 +17,14 @@ namespace FileTransfer.Elements
         /// <param name="panel"></param>
         /// <param name="event"></param>
         /// <returns></returns>
-        public static StackPanel AddElement(StackPanel panel, System.EventHandler<RoutedEventArgs> @event)
+        public static ShowRecvProgress AddElement(StackPanel panel, System.EventHandler<RoutedEventArgs> @event)
         {
 
-            var res= Dispatcher.UIThread.InvokeAsync(() =>
+            var res= Dispatcher.UIThread.InvokeAsync<ShowRecvProgress>(() =>
             {
+
+                ShowRecvProgress showRecvProgress = new ShowRecvProgress();
+
                 StackPanel stackPanel = new StackPanel();
                 
                 //WrapPanel wrapePanel = new WrapPanel();
@@ -42,18 +44,28 @@ namespace FileTransfer.Elements
 
 
                 //stackPanel.Children.Add(wrapePanel);
+                //显示接收内容
+                TextBox ShowRecvText = new TextBox();
+                ShowRecvText.Name = "ShowRecvText";
+                ShowRecvText.BorderThickness = new Thickness(0);
+                ShowRecvText.IsReadOnly = true;
+                ShowRecvText.Height = 40;
+                ShowRecvText.FontFamily = "Microsoft YaHei";
 
-                TextBlock textBlock = new TextBlock();
-                textBlock.Name = "ShowRecvText";
-                
-                stackPanel.Children.Add(textBlock);
+                showRecvProgress.showRecvText = ShowRecvText;
+                stackPanel.Children.Add(ShowRecvText);
 
+                //输入框
                 TextBox textBox = new TextBox();
                 textBox.Name = "Content";
-                textBox.Height = 24;
+                textBox.Height = 40;
                 textBox.AcceptsReturn = true;
                 textBox.FontSize = 18;
                 textBox.Margin= new Thickness(0, 0, 0, 5);
+                textBox.Watermark = "input";
+                textBox.FontFamily = "Microsoft YaHei";
+
+                showRecvProgress.inputContent = textBox;
                 stackPanel.Children.Add(textBox);
 
 
@@ -63,21 +75,24 @@ namespace FileTransfer.Elements
                 sendText.Width = 200;
                 sendText.Background = Brush.Parse("LightBlue");
                 sendText.Click += @event;
+
+                showRecvProgress.sendText = sendText;
                 stackPanel.Children.Add(sendText);
 
-                
 
-               
+
+
                 //ProgressBar progressBar = new ProgressBar();
                 //progressBar.Minimum = 0;
                 //progressBar.Maximum = 100;
                 //progressBar.Name = "ProgressBar";
 
-                
 
+
+                showRecvProgress.stackPanelParent = stackPanel;
 
                 panel.Children.Add(stackPanel);
-                return stackPanel;
+                return showRecvProgress;
 
                 });
             return res.Result;
@@ -86,39 +101,53 @@ namespace FileTransfer.Elements
 
 
 
-        public static ProgressBar AddProgressFromStackPanel(StackPanel panel)
+        public static ShowPercent AddProgressFromStackPanel(StackPanel panel)
         {
-            var res= Dispatcher.UIThread.InvokeAsync<ProgressBar>(() => {
+            var res= Dispatcher.UIThread.InvokeAsync<ShowPercent>(() => {
 
+                    ShowPercent showPercent = new ShowPercent();
 
                     ProgressBar progressBar = new ProgressBar();
                     progressBar.Minimum = 0;
                     progressBar.Maximum = 100;
                     progressBar.Height = 10;
                     progressBar.Margin= new Thickness(0, 5, 0, 0);
-                    //TextBlock showProgress = new TextBlock();
-                    //showProgress.HorizontalAlignment = HorizontalAlignment.Right;
 
-                    //Binding mybinding = new Binding();
-                    //mybinding.Source = progressBar;
-                    //PropertyPath propertyPath = new PropertyPath(ProgressBar.ValueProperty);
-                    //mybinding.Path = propertyPath;
-                    //BindingOperations.SetBinding(showProgress, TextBlock.TextProperty, mybinding);
-
-                    //panel.Children.Add(showProgress);
-                    //panel.Children.Add(progressBar);
+                    showPercent.bar = progressBar;
                     panel.Children.Add(progressBar);
-                    return progressBar;
+
+                    TextBlock showProgress = new TextBlock();
+                    showProgress.HorizontalAlignment = HorizontalAlignment.Right;
+
+                    showPercent.percent = showProgress;
+                   
+                    panel.Children.Add(showProgress);    
+
+                //Binding mybinding = new Binding();
+                //mybinding.Source = progressBar;
+                //PropertyPath propertyPath = new PropertyPath(ProgressBar.ValueProperty);
+                //mybinding.Path = propertyPath;
+                //BindingOperations.SetBinding(showProgress, TextBlock.TextProperty, mybinding);
+
+                //panel.Children.Add(showProgress);
+                //panel.Children.Add(progressBar);
+
+
+
+
+              
+                    return showPercent;
                 
              
              
             });
             return res.Result;
         }
-        public static void SetBarValue(ProgressBar bar, double value)
+        public static void SetBarValue(ShowPercent percent , double value)
         {
             Dispatcher.UIThread.Post(() => {
-                bar.Value = value;
+                percent.bar.Value = value;
+                percent.percent.Text = value.ToString();
             }
             );
         }

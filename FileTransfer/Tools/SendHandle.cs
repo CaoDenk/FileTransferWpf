@@ -119,7 +119,7 @@ namespace FileTransfer.Tools
         {
             byte[] bytes = new byte[16];
             WriteDataToBuffer(bytes, InfoHeader.OK_RECV);
-            //WriteDataToBuffer(data, 0, data.Length);
+            //WriteDataToBuffer(bytes, packorder, 4);
             Array.Copy(uuidbytes, 0, bytes, 8, 8);
             return bytes;
 

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using FileTransfer.Elements;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,8 +20,10 @@ namespace FileTransfer.Models
         public long hasRecvSize=0;
         public int packOrder=1;
 
-        public ProgressBar progressBar;
-        
+        //public ProgressBar progressBar;
+
+        public ShowPercent showPercent;
+
         /// <summary>
         /// 强制关闭需要
         /// </summary>

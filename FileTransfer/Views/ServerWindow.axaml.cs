@@ -53,7 +53,10 @@ namespace FileTransfer.Views
         {
             serverWindowViewModel.SendText((Button)sender);
         }
-
+        private void ReSend(object sender, RoutedEventArgs e)
+        {
+            serverWindowViewModel.ReSend();
+        }
         protected override void OnClosing(CancelEventArgs e)
         {
 
