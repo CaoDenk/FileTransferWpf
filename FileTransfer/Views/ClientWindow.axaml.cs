@@ -9,7 +9,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using FileTransfer.ViewModels;
 using System.ComponentModel;
-
+using FileTransfer.Tools;
 namespace FileTransfer.Views
 {
     public partial class ClientWindow : Window
@@ -23,7 +23,7 @@ namespace FileTransfer.Views
             this.AttachDevTools();
 #endif
             clientWindowViewModel = new ClientWindowViewModel();
-           
+            clientWindowViewModel.panel=ClientStackTag;
             DataContext = clientWindowViewModel;
         }
 
@@ -31,7 +31,7 @@ namespace FileTransfer.Views
         {
             if (clientWindowViewModel.IsConnected)
             {
-                //MessageBox.Show("ÒÑ¾­Á¬½Ó£¬ÇëÎðÖØ¸´²Ù×÷", "¾¯¸æ");
+                MyMessageBox.Show("è­¦å‘Š","å·²ç»è¿žæŽ¥ï¼Œè¯·å‹¿é‡å¤æ“ä½œ");
                 return;
             }
             clientWindowViewModel.Connect(ChangeBtnColor);
@@ -41,17 +41,17 @@ namespace FileTransfer.Views
         {
             clientWindowViewModel.SendText();
         }
-        private void OpenFiles(object sender, RoutedEventArgs e)
+        private async void OpenFiles(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            //openFileDialog.Title = "Ò»´ÎÖ»ÄÜ×î¶àÑ¡Á½¸ö£¬·ñÔòÒ»´ÎÒ²Ö»·¢ËÍÇ°Á½¸ö";
+            //openFileDialog.Title = "ä¸€æ¬¡åªèƒ½æœ€å¤šé€‰ä¸¤ä¸ªï¼Œå¦åˆ™ä¸€æ¬¡ä¹Ÿåªå‘é€å‰ä¸¤ä¸ª";
             //openFileDialog.Multiselect = true;
-            var res= openFileDialog.ShowAsync(this);
+            var res=  await  openFileDialog.ShowAsync(this);
             //var res = openFileDialog.ShowDialog();
-            if (res.Result!=null)
+            if (res!=null)
             {
 
-                fullFilePaths = res.Result;
+                fullFilePaths = res;
                 foreach (string s in fullFilePaths)
                 {
                     string tmp = s;
@@ -67,8 +67,8 @@ namespace FileTransfer.Views
         {
             if (fullFilePaths != null)
                 clientWindowViewModel.SendFileRequest(fullFilePaths);
-            //else
-                //MessageBox.Show("Äú»¹Î´Ñ¡ÔñÎÄ¼þ,ÇëÑ¡ÔñÎÄ¼þ");
+            else
+                MyMessageBox.Show("ä¿¡æ¯","æ‚¨è¿˜æœªé€‰æ‹©æ–‡ä»¶,è¯·é€‰æ‹©æ–‡ä»¶");
         }
         void ChangeBtnColor(bool connected)
         {
@@ -76,7 +76,7 @@ namespace FileTransfer.Views
             {
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    ConnBtn.Content = "ÒÑÁ¬½Ó";
+                    ConnBtn.Content = "å·²è¿žæŽ¥";
                     ConnBtn.Background = Brushes.LightBlue;
                 });
             }
@@ -85,7 +85,7 @@ namespace FileTransfer.Views
                 
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    ConnBtn.Content = "Î´Á¬½Ó";
+                    ConnBtn.Content = "æœªè¿žæŽ¥";
                     ConnBtn.Background = Brushes.Red;
                 });
 

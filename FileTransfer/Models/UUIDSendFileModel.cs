@@ -4,7 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Avalonia.Controls;
+using FileTransfer.Elements;
 namespace FileTransfer.Models
 {
     internal class UUIDSendFileModel
@@ -12,5 +13,13 @@ namespace FileTransfer.Models
         public FileStream stream;
         public string filepath;
         public int packnum = 0;
+
+        public ShowPercent showPercent;
+
+        public int totalpacknum;
+
     }
+
+    
+
 }

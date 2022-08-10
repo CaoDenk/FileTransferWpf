@@ -32,6 +32,6 @@
 
 		</WrapPanel>
 
-		<Button Click="ReSend">重新发送</Button>
+		<!-- <Button Click="ReSend">重新发送</Button> -->
 	</StackPanel>
 </Window>

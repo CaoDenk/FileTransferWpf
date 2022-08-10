@@ -31,18 +31,18 @@ namespace FileTransfer.Views
         {
             if (serverWindowViewModel.IsBound)
             {
-                MyMessageBox.Show("ÒÑ¾­°ó¶¨£¬ÎŞĞèÖØ¸´°ó¶¨", "¾¯¸æ");
+                MyMessageBox.Show("è­¦å‘Š","å·²ç»ç»‘å®šï¼Œæ— éœ€é‡å¤ç»‘å®š");
                 return;
             }
             bool res = serverWindowViewModel.Bind();
             if (!res)
             {
-                MyMessageBox.Show("°ó¶¨¶Ë¿ÚÊ§°Ü£¬Çë³¢ÊÔ¸ü»»¶Ë¿Ú", "´íÎó");
+                MyMessageBox.Show("é”™è¯¯","ç»‘å®šç«¯å£å¤±è´¥ï¼Œè¯·å°è¯•æ›´æ¢ç«¯å£");
             }
             else
             {
                 Button btn = (Button)(sender);
-                btn.Content = "ÒÑ°ó¶¨";
+                btn.Content = "å·²ç»‘å®š";
                 btn.Background = Brush.Parse("LightBlue");
                 serverWindowViewModel.Listen(stackTag,SendText,this);
             }

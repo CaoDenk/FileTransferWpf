@@ -1,4 +1,4 @@
-﻿using FileTransfer.GlobalConfig;
+using FileTransfer.GlobalConfig;
 using FileTransfer.Header;
 using FileTransfer.Models;
 using FileTransfer.Tools;
@@ -10,6 +10,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using FileTransfer.Elements;
+using Avalonia.Controls;
+using System.Text.Json.Nodes;
+using Avalonia.Threading;
+using MessageBox.Avalonia.Enums;
 
 namespace FileTransfer.ViewModels
 {
@@ -29,7 +34,7 @@ namespace FileTransfer.ViewModels
         public bool IsConnected => ClientSocket.Connected;
 
         // List<string> 
-
+        public StackPanel panel;
         string content;
         public string ShowContent
         {
@@ -55,7 +60,7 @@ namespace FileTransfer.ViewModels
             }
             catch (Exception e)
             {
-                MyMessageBox.Show("error",e.Message);
+                MyMessageBox.Show("错误",e.Message);
             }
 
         }
@@ -80,16 +85,28 @@ namespace FileTransfer.ViewModels
             {
 
                 string uuid = Guid.NewGuid().ToString()[0..8];
+                FileInfo fileInfo = new FileInfo(fullFilePath);
+
+                JsonObject js= new JsonObject();
+                js.Add("filename",fileInfo.Name);
+                js.Add("filesize", fileInfo.Length);
+       
+
+                js.Add("uuid", uuid);
+                
+                
 
                 UUIDSendFileModel uUIDSendFileModel = new UUIDSendFileModel();
                 uUIDSendFileModel.filepath = fullFilePath;
+                uUIDSendFileModel.totalpacknum=(int)(fileInfo.Length/(Config.FILE_BUFFER_SIZE-16)+1);
                 //uUIDSendFileModel.
                 uuidSendDict.Add(Encoding.UTF8.GetBytes(uuid), uUIDSendFileModel);
 
-                byte[] data = SendHandle.AddSendFileInfoHead(fullFilePath, uuid);
+                byte[] data = SendHandle.AddSendFileInfoHead(js, uuid);
                 ClientSocket.Send(data, SocketFlags.None);
             }
 
+            MyMessageBox.Show("消息","已发送请求，请等待回复");
         }
 
         //void SendFileRequest(string fullFilePath)
@@ -129,16 +146,19 @@ namespace FileTransfer.ViewModels
                                 ShowContent = RecvHandle.GetProcessedText(buf, len);
                                 break;
                             case InfoHeader.FILE:
-                                MyMessageBox.Show("是否接收文件", "消息", MessageBoxButton.YesNo);
+                                MyMessageBox.Show("是否接收文件", "消息", ButtonEnum.YesNo);
                                 break;
                             case InfoHeader.ALLOW_RECV:
                                 uuidBytes = buf[8..16];
                                 string filepath = uuidSendDict[uuidBytes].filepath;
                                 FileStream fileStream = File.OpenRead(filepath);
                                 uuidSendDict[uuidBytes].stream = fileStream;
+                                uuidSendDict[uuidBytes].showPercent=AddElements.AddProgressFromStackPanel(panel);
                                 goto case InfoHeader.OK_RECV;
                             case InfoHeader.RESEND_PACK:
                                 uuidBytes = buf[8..16];
+                                int packageOrder=BitConverter.ToInt32(buf,4);
+                                uuidSendDict[uuidBytes].packnum=packageOrder;
                                 long offset = BitConverter.ToInt64(buf, 16);
                                 ResendPack(uuidBytes, offset);
                                 SendFile(uuidBytes, buf);
@@ -147,12 +167,24 @@ namespace FileTransfer.ViewModels
                             case InfoHeader.CLOSE_SEND:
                                 uuidBytes = buf[8..16];
                                 MyMessageBox.Show("info","发送完成");
+                                ShowPercent delshowPercent=uuidSendDict[uuidBytes].showPercent;
+
+                                Dispatcher.UIThread.Post(()=>{
+                                panel.Children.Remove(delshowPercent.bar);
+                                panel.Children.Remove(delshowPercent.percent);
+                                });
+                               
+
                                 uuidSendDict[uuidBytes].stream.Close();
                                 uuidSendDict.Remove(uuidBytes);
                                 break;
                             case InfoHeader.OK_RECV:
                                 uuidBytes = buf[8..16];
                                 uuidSendDict[uuidBytes].packnum++;
+                                double percent=(uuidSendDict[uuidBytes].packnum*100.0/uuidSendDict[uuidBytes].totalpacknum);
+                                AddElements.SetBarValue(uuidSendDict[uuidBytes].showPercent,percent);
+                                uuidBytes = buf[8..16];
+                                
                                 SendFile(uuidBytes, buf);
                                 break;
                             case InfoHeader.REFUSE_RECV:

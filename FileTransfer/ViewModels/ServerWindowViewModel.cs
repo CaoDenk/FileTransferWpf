@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using FileTransfer.Elements;
 using FileTransfer.GlobalConfig;
 using FileTransfer.Header;
@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Avalonia.Interactivity;
+using MessageBox.Avalonia.Enums;
 //using FileTransfer.Tools;
 namespace FileTransfer.ViewModels
 {
@@ -29,7 +30,7 @@ namespace FileTransfer.ViewModels
 
         //之所以创建全局，而不是局部变量，以防强制关闭的时候，得关闭流
         Dictionary<StackPanel,Socket> stackPanelSocketDict = new Dictionary<StackPanel,Socket>();
-
+        HashSet<Socket>  clientsSocket=new HashSet<Socket>() ;
 
         /// <summary>
         /// 绑定端口
@@ -45,7 +46,7 @@ namespace FileTransfer.ViewModels
             catch (Exception e)
             {
 
-                MyMessageBox.Show("error",e.Message);
+                MyMessageBox.Show("错误",e.Message);
                 return false;
             }
             return true;
@@ -62,6 +63,7 @@ namespace FileTransfer.ViewModels
                 {
                     u.stream.Close();
                 }
+               
 
             }
             foreach (Socket socket in stackPanelSocketDict.Values)
@@ -85,6 +87,9 @@ namespace FileTransfer.ViewModels
                             Socket client = ServerSocket.Accept();
                             //clients.
                             ShowRecvProgress showRecvProgress = AddElements.AddElement(panel, @event);
+
+                            stackPanelSocketDict.Add(showRecvProgress.stackPanelParent, client);
+
                             Task.Factory.StartNew(() =>
                             {
                                 ReceiveByOneClient(panel,client, showRecvProgress,parent);
@@ -93,7 +98,7 @@ namespace FileTransfer.ViewModels
 
                         }catch(Exception e)
                         {
-                            //MessageBox.Show(e.Message);
+                            MyMessageBox.Show("错误",e.Message);
                             //return;
                             break;
                         }
@@ -105,7 +110,7 @@ namespace FileTransfer.ViewModels
 
 
         }
-        void ReceiveByOneClient(StackPanel parentPanel,Socket client,ShowRecvProgress showRecvProgress,Window parent)
+        async void ReceiveByOneClient(StackPanel parentPanel,Socket client,ShowRecvProgress showRecvProgress,Window parent)
         {
             byte[] buf = new byte[Config.FILE_BUFFER_SIZE];
 
@@ -130,17 +135,17 @@ namespace FileTransfer.ViewModels
                         case InfoHeader.FILE:
                             RecvFile recv = RecvHandle.GetRecvFileInfo(buf);
                             string msg = string.Format("是否接收文件{0},文件大小{1}字节", recv.filename, recv.filesize);
-                            MessageBoxResult messageBoxResult = MyMessageBox.Show(msg, "消息", MessageBoxButton.YesNo);
-                            if (messageBoxResult == MessageBoxResult.Yes)
+                            ButtonResult messageBoxResult = MyMessageBox.Show(msg, "消息", ButtonEnum.YesNo);
+                            if (messageBoxResult == ButtonResult.Yes)
                             {
                                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                                 saveFileDialog.InitialFileName = recv.filename;
-                                var res = saveFileDialog.ShowAsync(parent);
-                                if (res.Result!=null)
+                                var res = await saveFileDialog.ShowAsync(parent);
+                                if (res!=null)
                                 {
 
                                     //创建文件
-                                    FileStream fileStream = File.Create(res.Result);
+                                    FileStream fileStream = File.Create(res);
 
                                     UUIDRecvFileModel uUIDFileModel = new UUIDRecvFileModel();
                                     uUIDFileModel.filesize = recv.filesize;
@@ -249,7 +254,7 @@ namespace FileTransfer.ViewModels
                 }
                 catch (Exception e)
                 {
-                    //MessageBox.Show(e.Message);
+                    MyMessageBox.Show("错误",e.Message);
                     break;
 
                 }
@@ -264,8 +269,9 @@ namespace FileTransfer.ViewModels
                         Dispatcher.UIThread.Post(() =>
                         {
                             parentPanel.Children.Remove(showRecvProgress.stackPanelParent);
+                            stackPanelSocketDict.Remove(parentPanel);
                         });
-
+                      
 
                         //如果同时接收多个文件 ,set里面储存所有uuid 为 key 的接收文件任务，循环删除
                         foreach (byte[] uuidkey in set)
@@ -277,7 +283,7 @@ namespace FileTransfer.ViewModels
                             }
                         }
 
-         
+                        client.Close();
                     }
                 }
             }

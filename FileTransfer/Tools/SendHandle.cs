@@ -35,17 +35,10 @@ namespace FileTransfer.Tools
        /// </summary>
        /// <param name="file"></param>
        /// <returns></returns>
-      public static  byte[] AddSendFileInfoHead(string fullFilePath, string uuid)
+      public static  byte[] AddSendFileInfoHead(JsonObject js, string uuid)
         {
 
-            FileInfo fileInfo = new FileInfo(fullFilePath);
-
-            JsonObject js= new JsonObject();
-            js.Add("filename",fileInfo.Name);
-            js.Add("filesize", fileInfo.Length);
-       
-
-            js.Add("uuid", uuid);
+            
 
             string jstr=js.ToString();
             byte[] jsoBytes = Encoding.UTF8.GetBytes(jstr);
@@ -119,7 +112,6 @@ namespace FileTransfer.Tools
         {
             byte[] bytes = new byte[16];
             WriteDataToBuffer(bytes, InfoHeader.OK_RECV);
-            //WriteDataToBuffer(bytes, packorder, 4);
             Array.Copy(uuidbytes, 0, bytes, 8, 8);
             return bytes;
 
