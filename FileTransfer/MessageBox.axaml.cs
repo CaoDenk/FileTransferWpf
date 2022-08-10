@@ -39,15 +39,16 @@ namespace FileTransfer
         }
 
 
-
-        public static Task<MessageBoxResult> Show(string text, string title = "œ˚œ¢", MessageBoxButtons buttons = default, Window parent = null)
+        
+        public static Task<MessageBoxResult> Show(string text, string title = "Ê∂àÊÅØ", MessageBoxButtons buttons = default, Window parent = null)
         {
             return Dispatcher.UIThread.InvokeAsync<MessageBoxResult>(() => {
                 var msgbox = new MessageBox()
                 {
                     Title = title,
                     Width = 200,
-                    Height = 100
+                    Height = 100,
+                    Position=new PixelPoint(400, 400),
 
                 };
                 msgbox.FindControl<TextBlock>("Text").Text = text;
