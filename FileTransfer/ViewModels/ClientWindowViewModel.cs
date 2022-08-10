@@ -15,6 +15,7 @@ using Avalonia.Controls;
 using System.Text.Json.Nodes;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
+using static FileTransfer.MessageBox;
 
 namespace FileTransfer.ViewModels
 {
@@ -60,7 +61,7 @@ namespace FileTransfer.ViewModels
             }
             catch (Exception e)
             {
-                MyMessageBox.Show("错误",e.Message);
+                MessageBox.Show("e.Message");
             }
 
         }
@@ -106,7 +107,7 @@ namespace FileTransfer.ViewModels
                 ClientSocket.Send(data, SocketFlags.None);
             }
 
-            MyMessageBox.Show("消息","已发送请求，请等待回复");
+            MessageBox.Show("已发送请求，请等待回复,等待对方回复");
         }
 
         //void SendFileRequest(string fullFilePath)
@@ -146,7 +147,7 @@ namespace FileTransfer.ViewModels
                                 ShowContent = RecvHandle.GetProcessedText(buf, len);
                                 break;
                             case InfoHeader.FILE:
-                                MyMessageBox.Show("是否接收文件", "消息", ButtonEnum.YesNo);
+                                MessageBox.Show("是否接收文件", "消息", MessageBoxButtons.YesNo);
                                 break;
                             case InfoHeader.ALLOW_RECV:
                                 uuidBytes = buf[8..16];
@@ -166,7 +167,7 @@ namespace FileTransfer.ViewModels
 
                             case InfoHeader.CLOSE_SEND:
                                 uuidBytes = buf[8..16];
-                                MyMessageBox.Show("info","发送完成");
+                                MessageBox.Show("发送完成");
                                 ShowPercent delshowPercent=uuidSendDict[uuidBytes].showPercent;
 
                                 Dispatcher.UIThread.Post(()=>{

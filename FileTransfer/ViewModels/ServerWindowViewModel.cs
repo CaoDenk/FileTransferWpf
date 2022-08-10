@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using Avalonia.Interactivity;
 using MessageBox.Avalonia.Enums;
+using static FileTransfer.MessageBox;
 //using FileTransfer.Tools;
 namespace FileTransfer.ViewModels
 {
@@ -46,7 +47,7 @@ namespace FileTransfer.ViewModels
             catch (Exception e)
             {
 
-                MyMessageBox.Show("错误",e.Message);
+                MessageBox.Show(e.Message);
                 return false;
             }
             return true;
@@ -98,7 +99,7 @@ namespace FileTransfer.ViewModels
 
                         }catch(Exception e)
                         {
-                            MyMessageBox.Show("错误",e.Message);
+                            MessageBox.Show(e.Message);
                             //return;
                             break;
                         }
@@ -135,8 +136,8 @@ namespace FileTransfer.ViewModels
                         case InfoHeader.FILE:
                             RecvFile recv = RecvHandle.GetRecvFileInfo(buf);
                             string msg = string.Format("是否接收文件{0},文件大小{1}字节", recv.filename, recv.filesize);
-                            ButtonResult messageBoxResult = MyMessageBox.Show(msg, "消息", ButtonEnum.YesNo);
-                            if (messageBoxResult == ButtonResult.Yes)
+                            MessageBoxResult messageBoxResult = await MessageBox.Show(msg, "消息", MessageBoxButtons.YesNo);
+                            if (messageBoxResult == MessageBoxResult.Yes)
                             {
                                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                                 saveFileDialog.InitialFileName = recv.filename;
@@ -203,7 +204,7 @@ namespace FileTransfer.ViewModels
                                 TimeSpan duration = DateTime.Now - uuidRecvDict[uuidbytes].start;
                                 Task.Factory.StartNew(() =>
                                 {
-                                    MyMessageBox.Show("info","接收完成,花费" + duration.TotalSeconds + "s");
+                                    MessageBox.Show("接收完成,花费" + duration.TotalSeconds + "s");
                                 });
                                 client.Send(SendHandle.SendCloseSend(uuidbytes));
                                 uuidRecvDict[uuidbytes].stream.Close();
@@ -236,7 +237,7 @@ namespace FileTransfer.ViewModels
                            
                             if (set.Count()==0)
                             {
-                                MyMessageBox.Show("错误","不合法的请求头");
+                                MessageBox.Show("不合法的请求头");
                                 break;
                             }
                             else
@@ -254,7 +255,7 @@ namespace FileTransfer.ViewModels
                 }
                 catch (Exception e)
                 {
-                    MyMessageBox.Show("错误",e.Message);
+                    MessageBox.Show(e.Message);
                     break;
 
                 }

@@ -31,7 +31,7 @@ namespace FileTransfer.Views
         {
             if (clientWindowViewModel.IsConnected)
             {
-                MyMessageBox.Show("警告","已经连接，请勿重复操作");
+                MessageBox.Show("已经连接，请勿重复操作");
                 return;
             }
             clientWindowViewModel.Connect(ChangeBtnColor);
@@ -68,7 +68,7 @@ namespace FileTransfer.Views
             if (fullFilePaths != null)
                 clientWindowViewModel.SendFileRequest(fullFilePaths);
             else
-                MyMessageBox.Show("信息","您还未选择文件,请选择文件");
+                MessageBox.Show("您还未选择文件,请选择文件");
         }
         void ChangeBtnColor(bool connected)
         {

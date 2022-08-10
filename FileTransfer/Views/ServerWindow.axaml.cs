@@ -7,6 +7,7 @@ using FileTransfer.Tools;
 using FileTransfer.ViewModels;
 using System.ComponentModel;
 
+
 namespace FileTransfer.Views
 {
     public partial class ServerWindow : Window
@@ -31,13 +32,13 @@ namespace FileTransfer.Views
         {
             if (serverWindowViewModel.IsBound)
             {
-                MyMessageBox.Show("警告","已经绑定，无需重复绑定");
+                MessageBox.Show("已经绑定，无需重复绑定");
                 return;
             }
             bool res = serverWindowViewModel.Bind();
             if (!res)
             {
-                MyMessageBox.Show("错误","绑定端口失败，请尝试更换端口");
+                MessageBox.Show("绑定端口失败，请尝试更换端口");
             }
             else
             {
