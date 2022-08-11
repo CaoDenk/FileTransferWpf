@@ -45,15 +45,12 @@ namespace FileTransfer.Views
                 Button btn = (Button)(sender);
                 btn.Content = "已绑定";
                 btn.Background = Brush.Parse("LightBlue");
-                serverWindowViewModel.Listen(stackTag,SendText,this);
+                serverWindowViewModel.Listen(stackTag,this);
             }
 
         }
 
-        private void SendText(object sender, RoutedEventArgs e)
-        {
-            serverWindowViewModel.SendText((Button)sender);
-        }
+    
         private void ReSend(object sender, RoutedEventArgs e)
         {
             serverWindowViewModel.ReSend();

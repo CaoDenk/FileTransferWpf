@@ -61,7 +61,7 @@ namespace FileTransfer.ViewModels
             }
             catch (Exception e)
             {
-                MessageBox.Show("e.Message");
+                MessageBox.Show(e.Message);
             }
 
         }
@@ -70,9 +70,16 @@ namespace FileTransfer.ViewModels
         /// </summary>
         public void SendText()
         {
-            SendHandle.AddTextInfoHeader(TextInput);
-            byte[] data = SendHandle.AddTextInfoHeader(TextInput);
-            ClientSocket.SendAsync(data, SocketFlags.None);
+            if(TextInput.Length>0)
+            {
+                SendHandle.AddTextInfoHeader(TextInput);
+                byte[] data = SendHandle.AddTextInfoHeader(TextInput);
+                ClientSocket.SendAsync(data, SocketFlags.None);
+            }else
+            {
+                MessageBox.Show("输入不能为空！请输入内容。");
+            }
+     
         }
         /// <summary>
         /// 发送"发送文件请求"

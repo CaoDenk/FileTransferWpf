@@ -43,12 +43,14 @@ namespace FileTransfer
         public static Task<MessageBoxResult> Show(string text, string title = "消息", MessageBoxButtons buttons = default, Window parent = null)
         {
             return Dispatcher.UIThread.InvokeAsync<MessageBoxResult>(() => {
+
+                
                 var msgbox = new MessageBox()
                 {
                     Title = title,
-                    Width = 200,
+                    Width = text.Length * 14+ 110,
                     Height = 100,
-                    Position=new PixelPoint(400, 400),
+                    
 
                 };
                 msgbox.FindControl<TextBlock>("Text").Text = text;
