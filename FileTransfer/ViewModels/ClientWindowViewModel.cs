@@ -34,7 +34,10 @@ namespace FileTransfer.ViewModels
         public string TextInput { get; set; } = "";
         public bool IsConnected => ClientSocket.Connected;
 
-        // List<string> 
+        public int fileBufSize { set; get; } = 32;
+
+        byte[] filebuf;
+
         public StackPanel panel;
         string content;
         public string ShowContent
@@ -140,7 +143,7 @@ namespace FileTransfer.ViewModels
         {
             Task.Factory.StartNew(() =>
             {
-                byte[] buf = new byte[Config.FILE_BUFFER_SIZE];
+                byte[] buf = new byte[Config.TEXT_BUFER_SIZE];
                 while (true)
                 {
                     try
@@ -162,14 +165,15 @@ namespace FileTransfer.ViewModels
                                 FileStream fileStream = File.OpenRead(filepath);
                                 uuidSendDict[uuidBytes].stream = fileStream;
                                 uuidSendDict[uuidBytes].showPercent=AddElements.AddProgressFromStackPanel(panel);
-                                goto case InfoHeader.OK_RECV;
+                                SendFile(uuidBytes);
+                                break;
                             case InfoHeader.RESEND_PACK:
                                 uuidBytes = buf[8..16];
                                 int packageOrder=BitConverter.ToInt32(buf,4);
                                 uuidSendDict[uuidBytes].packnum=packageOrder;
                                 long offset = BitConverter.ToInt64(buf, 16);
                                 ResendPack(uuidBytes, offset);
-                                SendFile(uuidBytes, buf);
+                                SendFile(uuidBytes);
                                 break;
 
                             case InfoHeader.CLOSE_SEND:
@@ -179,8 +183,7 @@ namespace FileTransfer.ViewModels
 
                                 Dispatcher.UIThread.Post(()=>{
                                 panel.Children.Remove(delshowPercent.bar);
-                                panel.Children.Remove(delshowPercent.percent);
-                                });
+                                panel.Children.Remove(delshowPercent.percent);});
                                
 
                                 uuidSendDict[uuidBytes].stream.Close();
@@ -191,13 +194,14 @@ namespace FileTransfer.ViewModels
                                 uuidSendDict[uuidBytes].packnum++;
                                 double percent=(uuidSendDict[uuidBytes].packnum*100.0/uuidSendDict[uuidBytes].totalpacknum);
                                 AddElements.SetBarValue(uuidSendDict[uuidBytes].showPercent,percent);
-                                uuidBytes = buf[8..16];
+                
                                 
-                                SendFile(uuidBytes, buf);
+                                SendFile(uuidBytes);
                                 break;
                             case InfoHeader.REFUSE_RECV:
                                 uuidBytes = buf[8..16];
                                 uuidSendDict.Remove(uuidBytes);
+                                MessageBox.Show("对方拒绝接收");
                                 break;
                             default:
                                 throw new Exception("错误信息头");
@@ -220,7 +224,7 @@ namespace FileTransfer.ViewModels
             );
 
         }
-        public void SendFile(byte[] uuidByte, byte[] filebuf)
+        public void SendFile(byte[] uuidByte)
         {
 
             FileStream fileStream = uuidSendDict[uuidByte].stream;
@@ -230,7 +234,8 @@ namespace FileTransfer.ViewModels
             {
                 SendHandle.AddContinueRecv(filebuf, uuidSendDict[uuidByte].packnum);
                 Array.Copy(uuidByte, 0, filebuf, 8, 8);
-                ClientSocket.Send(filebuf, 0, len + 16, SocketFlags.None);
+                SendHandle.WriteDataToBuffer(filebuf, uuidSendDict[uuidByte].packnum, len + 16);
+                ClientSocket.Send(filebuf, 0, len + 20, SocketFlags.None);
 
             }
             else
@@ -265,7 +270,19 @@ namespace FileTransfer.ViewModels
                 uUIDSendFileModel.stream?.Close();
             }
         }
+        public void SetBufSize(int index)
+        {
 
+            
+            if (index == (int)UnitSize.KBYTES)
+            {
+     
+                filebuf = new byte[fileBufSize * 1024];
+            }
+            else
+                filebuf = new byte[fileBufSize];
+
+        }
 
     }
 }

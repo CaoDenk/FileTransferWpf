@@ -34,6 +34,7 @@ namespace FileTransfer.Views
                 MessageBox.Show("已经连接，请勿重复操作");
                 return;
             }
+            clientWindowViewModel.SetBufSize(UnitSizeComboBox.SelectedIndex);
             clientWindowViewModel.Connect(ChangeBtnColor);
         }
 
@@ -78,6 +79,11 @@ namespace FileTransfer.Views
                 {
                     ConnBtn.Content = "已连接";
                     ConnBtn.Background = Brushes.LightBlue;
+
+                    UnitSizeComboBox.IsHitTestVisible = false;
+                    IpTextBox.IsReadOnly = true;
+                    PortTextBox.IsReadOnly = true;
+                    BufSizeTextBox.IsReadOnly = true;
                 });
             }
             else
@@ -87,6 +93,10 @@ namespace FileTransfer.Views
                 {
                     ConnBtn.Content = "未连接";
                     ConnBtn.Background = Brushes.Red;
+                    UnitSizeComboBox.IsHitTestVisible = true;
+                    IpTextBox.IsReadOnly = false;
+                    PortTextBox.IsReadOnly = false;
+                    BufSizeTextBox.IsReadOnly = false;
                 });
 
             }

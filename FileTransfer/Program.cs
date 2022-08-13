@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using System;
+using System.Drawing;
 
 namespace FileTransfer
 {
@@ -13,6 +14,8 @@ namespace FileTransfer
         [STAThread]
         public static void Main(string[] args) {
 
+        //    var fontFamily=System.Drawing.FontFamily.Families;
+        //    FontFamily fontFamily =System.Drawing.FontFamily;
             //System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 

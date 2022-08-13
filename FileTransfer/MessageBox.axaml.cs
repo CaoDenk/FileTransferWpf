@@ -11,9 +11,7 @@ namespace FileTransfer
         public MessageBox()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+
         }
 
         private void InitializeComponent()

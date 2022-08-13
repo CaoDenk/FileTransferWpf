@@ -33,6 +33,9 @@ namespace FileTransfer.ViewModels
         Dictionary<StackPanel, Socket> stackPanelSocketDict = new Dictionary<StackPanel, Socket>();
         HashSet<Socket> clientsSocket = new HashSet<Socket>();
 
+        public int fileBufSize { set; get; } = 32;
+
+        int calcFileBufSize = 32 * 1024;
         /// <summary>
         /// 绑定端口
         /// </summary>
@@ -172,14 +175,15 @@ namespace FileTransfer.ViewModels
                             break;
                         case InfoHeader.CONTINUE_RECV:
                             uuidbytes = buf[8..16];
-                            int packnum = BitConverter.ToInt32(buf, 4);
-                            if (packnum != uuidRecvDict[uuidbytes].packOrder)
+                            int packnum0 = BitConverter.ToInt32(buf, 4);
+                            int packnum1 = BitConverter.ToInt32(buf, len - 4);
+                            if (packnum0 != uuidRecvDict[uuidbytes].packOrder || packnum1 != uuidRecvDict[uuidbytes].packOrder)
                             {
                                 client.Send(SendHandle.SendResendPack(uuidbytes, uuidRecvDict[uuidbytes].packOrder, uuidRecvDict[uuidbytes].hasRecvSize));
                                 break;
                             }
                             uuidRecvDict[uuidbytes].packOrder++;
-                            uuidRecvDict[uuidbytes].hasRecvSize += len - 16;
+                            uuidRecvDict[uuidbytes].hasRecvSize += len - 20;
                             double percent = uuidRecvDict[uuidbytes].hasRecvSize * 1.0 / uuidRecvDict[uuidbytes].filesize * 100;
 
                             AddElements.SetBarValue(uuidRecvDict[uuidbytes].showPercent, percent);
@@ -292,7 +296,7 @@ namespace FileTransfer.ViewModels
         {
             StackPanel parent = sender.Parent as StackPanel;
             TextBox textBox = parent.FindByName<TextBox>("Content");
-            if (textBox.Text == null||textBox.Text.Length==0)
+            if (textBox.Text == null||textBox.Text.Trim().Length==0)
             {
                 MessageBox.Show("输入不能为空！请输入内容。");
                
@@ -347,6 +351,17 @@ namespace FileTransfer.ViewModels
                 byte[] data = SendHandle.AddTextInfoHeader(textBox.Text);
                 stackPanelSocketDict[parent].SendAsync(data, SocketFlags.None);
             }
+        }
+        public void SetBufSize(int index)
+        {
+
+            if (index == (int)UnitSize.KBYTES)
+            {
+                calcFileBufSize = fileBufSize * 1024;
+            }
+            else
+                calcFileBufSize = fileBufSize;
+
         }
     }
 }
