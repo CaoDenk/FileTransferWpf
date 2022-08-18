@@ -12,14 +12,21 @@ namespace FileTransfer.Models
     {
         public FileStream stream;
         public string filepath;
-        public int packnum = 0;
-
+        public int packnum;
         public ShowPercent showPercent;
+
+        public byte[] data;
 
         public int totalpacknum;
 
+        public UUIDSendFileModel(int size)
+        {
+            data = new byte[size];
+        }
+
+
     }
 
-    
+
 
 }

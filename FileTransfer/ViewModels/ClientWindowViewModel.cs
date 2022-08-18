@@ -36,7 +36,9 @@ namespace FileTransfer.ViewModels
 
         public int fileBufSize { set; get; } = 32;
 
-        byte[] filebuf;
+        int calcFileBufSize = 32 * 1024;
+        int fullDataSize = 0;
+
 
         public StackPanel panel;
         string content;
@@ -98,18 +100,15 @@ namespace FileTransfer.ViewModels
                 string uuid = Guid.NewGuid().ToString()[0..8];
                 FileInfo fileInfo = new FileInfo(fullFilePath);
 
-                JsonObject js= new JsonObject();
-                js.Add("filename",fileInfo.Name);
+                JsonObject js = new JsonObject();
+                js.Add("filename", fileInfo.Name);
                 js.Add("filesize", fileInfo.Length);
-       
 
                 js.Add("uuid", uuid);
-                
-                
 
-                UUIDSendFileModel uUIDSendFileModel = new UUIDSendFileModel();
+                UUIDSendFileModel uUIDSendFileModel = new UUIDSendFileModel(calcFileBufSize);
                 uUIDSendFileModel.filepath = fullFilePath;
-                uUIDSendFileModel.totalpacknum=(int)(fileInfo.Length/(Config.FILE_BUFFER_SIZE-16)+1);
+                uUIDSendFileModel.totalpacknum = (int)(fileInfo.Length / (fullDataSize) + 1);
                 //uUIDSendFileModel.
                 uuidSendDict.Add(Encoding.UTF8.GetBytes(uuid), uUIDSendFileModel);
 
@@ -169,11 +168,11 @@ namespace FileTransfer.ViewModels
                                 break;
                             case InfoHeader.RESEND_PACK:
                                 uuidBytes = buf[8..16];
-                                int packageOrder=BitConverter.ToInt32(buf,4);
-                                uuidSendDict[uuidBytes].packnum=packageOrder;
-                                long offset = BitConverter.ToInt64(buf, 16);
-                                ResendPack(uuidBytes, offset);
-                                SendFile(uuidBytes);
+                                int packageOrder = BitConverter.ToInt32(buf, 4);
+
+                                UUIDSendFileModel uUIDSendFile = uuidSendDict[uuidBytes];
+                                ClientSocket.Send(uUIDSendFile.data);
+
                                 break;
 
                             case InfoHeader.CLOSE_SEND:
@@ -227,14 +226,17 @@ namespace FileTransfer.ViewModels
         public void SendFile(byte[] uuidByte)
         {
 
-            FileStream fileStream = uuidSendDict[uuidByte].stream;
-            //Thread.Sleep(10);
+
+            UUIDSendFileModel uUIDSendFile = uuidSendDict[uuidByte];
+            FileStream fileStream = uUIDSendFile.stream;
+            byte[] filebuf = uUIDSendFile.data;
             int len;
-            if ((len = fileStream.Read(filebuf, 16, Config.FULL_SIZE)) > 0)
+            if ((len = fileStream.Read(filebuf, Config.OFFSET, fullDataSize)) > 0)
             {
                 SendHandle.AddContinueRecv(filebuf, uuidSendDict[uuidByte].packnum);
                 Array.Copy(uuidByte, 0, filebuf, 8, 8);
-                SendHandle.WriteDataToBuffer(filebuf, uuidSendDict[uuidByte].packnum, len + 16);
+                SendHandle.WriteDataToBuffer(filebuf, uuidSendDict[uuidByte].packnum, len + Config.OFFSET);
+
                 ClientSocket.Send(filebuf, 0, len + 20, SocketFlags.None);
 
             }
@@ -242,18 +244,9 @@ namespace FileTransfer.ViewModels
             {
                 ClientSocket.Send(SendHandle.SendFinished(uuidByte), SocketFlags.None);
             }
-
         }
 
-        /// <summary>
-        /// 重新发送下文件
-        /// </summary>
-        /// <param name="uuidBytes"></param>
-        /// <param name="offset"></param>
-        void ResendPack(byte[] uuidBytes, long offset)
-        {
-            uuidSendDict[uuidBytes].stream.Seek(offset, SeekOrigin.Begin);
-        }
+     
         public void Close()
         {
 
@@ -276,12 +269,14 @@ namespace FileTransfer.ViewModels
             
             if (index == (int)UnitSize.KBYTES)
             {
-     
-                filebuf = new byte[fileBufSize * 1024];
+                calcFileBufSize = fileBufSize * 1024;
+                //filebuf = new byte[fileBufSize * 1024];
             }
             else
-                filebuf = new byte[fileBufSize];
+                //filebuf = new byte[fileBufSize];
+                calcFileBufSize= fileBufSize;
 
+            fullDataSize = calcFileBufSize - 20;
         }
 
     }

@@ -179,6 +179,7 @@ namespace FileTransfer.ViewModels
                             int packnum1 = BitConverter.ToInt32(buf, len - 4);
                             if (packnum0 != uuidRecvDict[uuidbytes].packOrder || packnum1 != uuidRecvDict[uuidbytes].packOrder)
                             {
+                                uuidRecvDict[uuidbytes].errorpack++;// = packnum0;
                                 client.Send(SendHandle.SendResendPack(uuidbytes, uuidRecvDict[uuidbytes].packOrder, uuidRecvDict[uuidbytes].hasRecvSize));
                                 break;
                             }
@@ -205,28 +206,40 @@ namespace FileTransfer.ViewModels
                             }
                             if (uuidRecvDict[uuidbytes].hasRecvSize == uuidRecvDict[uuidbytes].filesize)
                             {
-                                TimeSpan duration = DateTime.Now - uuidRecvDict[uuidbytes].start;
-                                Task.Factory.StartNew(() =>
+
+                                Task.Run(() =>
                                 {
-                                    MessageBox.Show("接收完成,花费" + duration.TotalSeconds + "s");
+
+                                    TimeSpan duration = DateTime.Now - uuidRecvDict[uuidbytes].start;
+                               
+                                    client.Send(SendHandle.SendCloseSend(uuidbytes));
+                                    uuidRecvDict[uuidbytes].stream.Close();
+
+
+                                    ShowPercent showPercent = uuidRecvDict[uuidbytes].showPercent;
+
+
+                                    Dispatcher.UIThread.InvokeAsync(() =>
+                                    {
+                                        showRecvProgress.stackPanelParent.Children.Remove(showPercent.bar);
+                                        showRecvProgress.stackPanelParent.Children.Remove(showPercent.percent);
+
+                                    });
+
+                              
+
+
+
+                                    UUIDRecvFileModel model = uuidRecvDict[uuidbytes];
+                                    string s = string.Format(" 接收完成,花费{0},包总数{1}，错包个数{2},传输速度{3}MB/s",
+                                        duration.TotalSeconds,
+                                        model.packOrder,
+                                        model.errorpack,
+                                        model.filesize * 1.0 / 1024 / 1024 / duration.TotalSeconds);
+                                    MessageBox.Show(s);
+                                    uuidRecvDict.Remove(uuidbytes);
+                                    set.Remove(uuidbytes);
                                 });
-                                client.Send(SendHandle.SendCloseSend(uuidbytes));
-                                uuidRecvDict[uuidbytes].stream.Close();
-
-
-                                ShowPercent showPercent = uuidRecvDict[uuidbytes].showPercent;
-
-
-                                Dispatcher.UIThread.InvokeAsync(() =>
-                                {
-                                    showRecvProgress.stackPanelParent.Children.Remove(showPercent.bar);
-                                    showRecvProgress.stackPanelParent.Children.Remove(showPercent.percent);
-
-                                });
-
-                                uuidRecvDict.Remove(uuidbytes);
-                                set.Remove(uuidbytes);
-
 
                             }
                             else
