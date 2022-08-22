@@ -53,7 +53,7 @@
 		<WrapPanel Height="50">
 			<Button  Click="Connect"
 					 Name="ConnBtn"
-					 Margin="10,0"
+					 Margin="10,5,0,5"
 					 FontSize="20"
 					 Width="100"
 					 Height="40"
@@ -65,12 +65,12 @@
 
 		</WrapPanel>
 
-		<WrapPanel Height="30" >
+		<WrapPanel Height="40" >
 			<Button
                 Click="OpenFiles"
                 Margin="10,0,10,0"
 				Width="80"
-                Height="26"
+            
 				HorizontalAlignment="Center"
 				HorizontalContentAlignment="Center"
 				Background="LightBlue" >选择文件</Button>
@@ -83,19 +83,20 @@
 			<Button
                 Click="ClearSendFileList"
                 Margin="10,0,0,0"
-				Width="120"
+				Width="150"
 				HorizontalAlignment="Center"
 				HorizontalContentAlignment="Center"
                 Background="LightBlue">清空文件发送列表</Button>
 		</WrapPanel>
 
 
-		<TextBox Text="{Binding ShowContent}"  BorderThickness="0" IsReadOnly="True"/>
-		<TextBox   Name="Content"  Text="{Binding TextInput}" AcceptsReturn="True"  FontSize="20" />
+		<TextBox Text="{Binding ShowContent}" FontFamily = "Microsoft YaHei" BorderThickness="0" IsReadOnly="True"/>
+		<TextBox   Name="Content"  Text="{Binding TextInput}" FontFamily = "Microsoft YaHei" AcceptsReturn="True"  FontSize="20" />
 		<Button  Margin="0,5"
                  Width="80"
                  Click="SendText"
-                 Height="26"
+				 FontSize="20"
+                 Height="35"
 				 HorizontalAlignment="Center"
 				 HorizontalContentAlignment="Center"
 				 Background="LightBlue">发送</Button>
