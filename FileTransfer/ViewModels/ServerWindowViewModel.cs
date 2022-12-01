@@ -177,19 +177,23 @@ namespace FileTransfer.ViewModels
                             uuidbytes = buf[8..16];
                             int packnum0 = BitConverter.ToInt32(buf, 4);
                             int packnum1 = BitConverter.ToInt32(buf, len - 4);
-                            if (packnum0 != uuidRecvDict[uuidbytes].packOrder || packnum1 != uuidRecvDict[uuidbytes].packOrder)
+                            int packOrder = uuidRecvDict[uuidbytes].packOrder;
+                            if (packnum0 != packOrder || packnum1 != packOrder)
                             {
                                 uuidRecvDict[uuidbytes].errorpack++;// = packnum0;
-                                client.Send(SendHandle.SendResendPack(uuidbytes, uuidRecvDict[uuidbytes].packOrder, uuidRecvDict[uuidbytes].hasRecvSize));
+                                client.Send(SendHandle.SendResendPack(uuidbytes, packOrder, uuidRecvDict[uuidbytes].hasRecvSize));
                                 break;
                             }
                             uuidRecvDict[uuidbytes].packOrder++;
-                            uuidRecvDict[uuidbytes].hasRecvSize += len - 20;
+
+                            int writeSize = len - 20;
+
+                            uuidRecvDict[uuidbytes].hasRecvSize += writeSize;
                             double percent = uuidRecvDict[uuidbytes].hasRecvSize * 1.0 / uuidRecvDict[uuidbytes].filesize * 100;
 
                             AddElements.SetBarValue(uuidRecvDict[uuidbytes].showPercent, percent);
 
-                            uuidRecvDict[uuidbytes].stream.Write(buf, 16, len - 16);
+                            uuidRecvDict[uuidbytes].stream.Write(buf, 16, writeSize);
                             uuidRecvDict[uuidbytes].stream.Flush();
 
                             //发送接受成功
