@@ -65,7 +65,11 @@ namespace p2pchat.UdpCommunication
             //    case DataType.FILE:
             //        break;
             //}
-            DisplayRecvMsg.Show(userMsg.msg);
+            if(Global.GlobalVar.uidChatWith==user.uid)
+            {
+                DisplayRecvMsg.Show(userMsg.msg);
+            }
+        
 
         }
 

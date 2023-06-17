@@ -60,6 +60,9 @@ public partial class ChatWithFriend : ContentPage,ChatDialog
         ShowMsgStack.Add(label);
 
     }
-
+    protected override void OnDisappearing()
+    {
+        DisplayRecvMsg.chatDialog = null;
+    }
 
 }

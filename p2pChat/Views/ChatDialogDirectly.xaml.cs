@@ -68,6 +68,9 @@ public partial class ChatDialogDirectly : ContentPage,ChatDialog
     }
 
 
-
+    protected override void OnDisappearing()
+    {
+        DisplayRecvMsg.chatDialog = null;
+    }
 
 }
