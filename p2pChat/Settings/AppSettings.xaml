@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="p2pchat.Settings.AppSettings"
+             Title="AppSettings">
+    <VerticalStackLayout x:Name="Vert">
+
+        <Button Text="查看自己ipv6" Margin="2,2,2,2" Clicked="ShowSelfIpv6"/>
+        <Button Text="退出登录" Margin="2,2,2,2" Clicked="LogOut"/>
+        <Button Text="获取更新" Clicked="Update" Margin="2,2,2,2"/>
+        <Button Text="关于" Margin="2,2,2,2" Clicked="About"/>
+        <ProgressBar x:Name="DownProgress" IsVisible="false" />
+    </VerticalStackLayout>
+</ContentPage>

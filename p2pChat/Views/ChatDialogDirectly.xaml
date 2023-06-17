@@ -1,0 +1,42 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="p2pchat.Views.ChatDialogDirectly"
+             Title="通过ipv6直接聊天">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Entry Placeholder="输入对方ipv6"  Grid.Row="0"  Grid.Column="0" x:Name="RemoteIpv6" VerticalOptions="Start"  />
+        <Button  Clicked="ClearIpv6"   Grid.Row="0"  Grid.Column="1" Text="清除"  VerticalOptions="Start" Margin="2,2,2,2"/>
+
+
+      
+
+            <VerticalStackLayout x:Name="ShowMsgStack" Grid.Row="1"  Grid.ColumnSpan="2" VerticalOptions="Start">
+
+                </VerticalStackLayout>
+
+
+
+        <Border Grid.Row="2" Grid.Column="0"  MaximumHeightRequest="120" VerticalOptions="End">
+            <Editor   Placeholder="输入"   AutoSize="TextChanges" x:Name="InputMsg"/>
+        </Border>
+
+        <Button Text="发送" 
+                Margin="2,2,2,2"
+                Clicked="SendMsg"
+                Grid.Row="2" 
+                Grid.Column="1" 
+                HeightRequest="40" 
+                VerticalOptions="End"/>
+
+    </Grid>
+</ContentPage>

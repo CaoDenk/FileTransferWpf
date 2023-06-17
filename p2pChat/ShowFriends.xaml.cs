@@ -1,170 +1,123 @@
+using CommunityToolkit.Maui.Views;
 using Microsoft.Data.Sqlite;
+using p2pchat.Crud;
+using p2pchat.Init;
+using p2pchat.pojo;
+using p2pchat.Settings;
+using p2pchat.UdpCommunication;
+using p2pchat.Views;
+using System.Diagnostics;
 using System.Text;
+
 
 namespace p2pchat;
 
 public partial class ShowFriends : ContentPage
 {
+    Dictionary<string,User> userDict = new Dictionary<string,User>();
 	public ShowFriends()
 	{
 		InitializeComponent();
-	}
-    int count = 0;
+        ListAllFriends();
+        tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
+      
+        swipeGestureRecognizer.Direction = SwipeDirection.Left;
+        swipeGestureRecognizer.Swiped += DelFriend;
+    }
 
-    List<string> friends = new List<string>()
+    private  void DelFriend(object sender, SwipedEventArgs e)
     {
-        "xiaoming",
-        "小红",
-        "ggg",
-        "afg",
-        "xiaole"
-    };
-    private void AddFriend(object sender, EventArgs e)
-    {
+        Label label = (Label)sender;
+        FriendsDao.DeleteFriendByUid(label.ClassId);
+        LabelsStack.Remove((VerticalStackLayout)label.Parent);
 
-        string data_path = Environment.GetEnvironmentVariable("HOME");
-        using (var connection = new SqliteConnection($"Data Source = {data_path}/friends.db"))
-        {
-            connection.Open();
-
-            var sqlcomm = connection.CreateCommand();
-
-            //sqlcomm.CommandText = "create table friends (id int,name varchar(50) )";
-            int no=count%friends.Count;
-            sqlcomm.CommandText = $"insert into friends(id,name) values({count},'{friends[no]}')";
-            sqlcomm.ExecuteNonQuery();
-            count++;
-
-        }
-
+        userDict.Remove(label.ClassId);
 
 
 
     }
 
-    private void CreateDB(object sender, EventArgs e)
-    {
-        string data_path = Environment.GetEnvironmentVariable("HOME");
-        using (var connection = new SqliteConnection($"Data Source = {data_path}/friends.db"))
-        {
-            
-            connection.Open();
+    //protected override void OnAppearing()
+    //{
+    //    base.OnAppearing();
+    //    ListAllFriends();
+    //}
+    List<User> friends;
+    public  async void ListAllFriends()
+	{
+        //LabelsStack.Children.Clear();
+        //userDict.Clear();
+        friends = await FriendsDao.GetFriendsFromSqlite();
 
-            var sqlcomm = connection.CreateCommand();
-
-            sqlcomm.CommandText = "create table friends (id int,name varchar(50) )";
-
-            //sqlcomm.CommandText = "insert into friends(id,name) values(2,'denk')";
-            sqlcomm.ExecuteNonQuery();
-
-
-            //sqlcomm.CommandText = "select * from friends";
-            ////sqlcomm.ExecuteNonQuery(
-            //using (var reader = sqlcomm.ExecuteReader())
-            //{
-
-            //    while (reader.Read())
-            //    {
-
-            //        var name = reader.GetString(1);
-            //        Console.WriteLine(name);
-            //    }
-
-            //}
-        }
-
-
-    }
-
-    private void Query(object sender, EventArgs e)
-    {
-        string data_path = Environment.GetEnvironmentVariable("HOME");
-        using (var connection = new SqliteConnection($"Data Source = {data_path}/friends.db"))
-        {
-            connection.Open();
-
-            var sqlcomm = connection.CreateCommand();
-
-            sqlcomm.CommandText = "select * from friends";
-            //sqlcomm.ExecuteNonQuery(
-            using (var reader = sqlcomm.ExecuteReader())
-            {
-
-                while (reader.Read())
-                {
-
-                    var name = reader.GetString(1);
-                    Label label = new Label();
-                    label.Text = name;
-                    labelsStack.Add(label);
-                }
-
-            }
-        }
-
-    }
-
-    private void GetDataPath(object sender, EventArgs e)
-    {
-
-        //var dic = Environment.GetEnvironmentVariables();
-        //List<string> path = new List<string>();
-        //foreach (var key in dic)
-        //{
-
-        //    var str = $"{key}:{dic[key]}";
-        //    Console.WriteLine(str);
-        //    path.Add(str);
-
-        //}
-
-
-        string  data_path= Environment.GetEnvironmentVariable("ANDROID_DATA");
-        Label label = new Label();
-        label.Text = data_path;
-        labelsStack.Add(label);
-    }
-
-    private async void ShowPermissions(object sender, EventArgs e)
-    {
-        PermissionStatus status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
-
-        if (status == PermissionStatus.Granted)
-        {
-           await DisplayAlert("权限", "运行", "ok");
-        }else
-        {
-
-            await DisplayAlert("权限", "不允许", "ok");
-            await Permissions.RequestAsync<Permissions.StorageWrite>();
-        }
-
-    }
-
-
-    private  void TestPermissions(object sender, EventArgs e)
-    {
-        string data_path = Environment.GetEnvironmentVariable("HOME");
-
-        string filepath = $"{data_path}/test.txt";
-        using (FileStream fileStream = File.Create(filepath))
-        {
-            fileStream.Write(Encoding.UTF8.GetBytes("test"));
-        }
-        
-        DirectoryInfo directoryInfo = new DirectoryInfo(data_path);
-        var files = directoryInfo.GetFiles();
-        foreach(var file in files)
+        foreach (User user in friends)
         {
             Label label = new Label();
-            label.Text = file.Name;
 
-            labelsStack.Add(label);
+
+            //gestureRecognizer.PropertyChanged.Add(label);
+            label.Text = user.username;
+            label.FontSize = 24;
+            label.ClassId = user.uid;
+            label.GestureRecognizers.Add(tapGestureRecognizer);
+            label.GestureRecognizers.Add(swipeGestureRecognizer);
+
+            VerticalStackLayout vert=new VerticalStackLayout();
+            vert.Margin= new Thickness(2, 2, 2, 2);
+            vert.HeightRequest = 40;
+            vert.Add(label);
+            vert.VerticalOptions=LayoutOptions.Center;
+            vert.Background = Brush.AliceBlue;
+
+
+            LabelsStack.Add(vert);
+        
+            userDict.Add(user.uid, user);
         }
 
-       
-        
-        
+	}
 
+    TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
+   
+    SwipeGestureRecognizer swipeGestureRecognizer=new SwipeGestureRecognizer();
+
+    /// <summary>
+    /// 点击好友进入聊天框
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+    {
+       Label label=(Label)sender;
+
+       //User u= friends.Where(e => e.uid == label.ClassId).First();
+        User u = userDict[label.ClassId];
+        ChatWithFriend chatWithFriend = new ChatWithFriend();
+        DisplayRecvMsg.chatDialog = chatWithFriend;
+
+        Global.GlobalVar.uidChatWith = u.uid;
+        chatWithFriend.Title = label.Text;
+        Navigation.PushAsync(chatWithFriend);
+    }
+
+    private async void Add(object sender, EventArgs e)
+    {
+        //var popup = new Popup();
+        ////popup.Content = 
+        string action = await DisplayActionSheet("添加选项", "取消", null, "添加好友", "通过Ipv6对话");
+
+        switch (action)
+        {
+            case "添加好友":
+                Application.Current.MainPage.Navigation.PushAsync(new Add());
+                break;
+            case "通过Ipv6对话":
+                //Shell.Current.GoToAsync(nameof(ChatDialogDirectly),true);
+                ChatDialogDirectly chatDialogDirectly = new ChatDialogDirectly();
+                DisplayRecvMsg.chatDialog=chatDialogDirectly;
+                Application.Current.MainPage.Navigation.PushAsync(chatDialogDirectly);
+                break;
+        }
+
+        //Debug.WriteLine("Action: " + action);
     }
 }

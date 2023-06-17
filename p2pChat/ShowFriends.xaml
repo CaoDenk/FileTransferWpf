@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="p2pchat.ShowFriends"
-             Title="ShowFriends">
-    <VerticalStackLayout x:Name="labelsStack">
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-        <Button Clicked="CreateDB" Text="创建"/>
-        <Button Clicked="AddFriend" Text="添加"/>
-        <Button Clicked="Query" Text="查询"/>
-        <Button Clicked="GetDataPath" Text="获取data目录"/>
-        <Button Clicked="ShowPermissions" Text="获取权限"/>
-        <Button Clicked="TestPermissions" Text="测试权限"/>
+             xmlns:controls="clr-namespace:Microsoft.Maui.Controls;assembly=Microsoft.Maui.Controls"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="p2pchat.ShowFriends">
+    <controls:Shell.TitleView>
+        <Grid>
+
+            <Grid.ColumnDefinitions >
+                <ColumnDefinition Width="5*" ></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Text="好友" VerticalTextAlignment="Center" FontSize="Large" TextColor="White"/>
+            <Button Clicked="Add" Grid.Column="1" Text="添加"/>
+        </Grid>
+    </controls:Shell.TitleView>
+    <VerticalStackLayout x:Name="LabelsStack">
+
+
     </VerticalStackLayout>
 </ContentPage>
