@@ -7,7 +7,7 @@ using p2pchat.Global;
 
 namespace p2pchat;
 
-public partial class AppEntry : ContentPage
+public partial class AppEntry : Shell
 {
 	public AppEntry()
 	{
@@ -30,7 +30,6 @@ public partial class AppEntry : ContentPage
 
         Login login = new Login(name,password,zone);
 
-
         LoginResp resp= await login.ToLogin();
         
         if(resp.statusCode==(int)StatusCode.SUCCESS)
@@ -42,8 +41,6 @@ public partial class AppEntry : ContentPage
 
         }else
         {
-
-           
             DisplayAlert("¥ÌŒÛ", "√‹¬Î¥ÌŒÛ", "»∑∂®");
         }
       

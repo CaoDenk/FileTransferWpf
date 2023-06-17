@@ -28,47 +28,37 @@ namespace p2pchat.UdpCommunication
             this.address = address;
         }
 
-        public  void Handle()
+        public  async void Handle()
         {
 
-            UserMsg userMsg = ParseMsgBuf.Parse(buf, len, address);
-
-            User user = FriendsDao.QueryUsrByUid(userMsg.uid).Result;
-
-            ChatHistoryDao chatHistoryDao = new ChatHistoryDao(userMsg.uid,userMsg.uid);
-
-            if(user.username==null)
+            DataType dataType = (DataType)BitConverter.ToInt32(buf);
+            switch (dataType)
             {
-                Task.Run(chatHistoryDao.CreateChatHistoryTable);
-#if ANDROID
+                case DataType.TEXT:
+                    UserMsg userMsg = ParseMsgBuf.Parse(buf, len, address);
+              
+                    User user =await FriendsDao.QueryUsrByUid(userMsg.uid);
 
-                MsgPush.Push("陌生人的消息", userMsg.msg);
-#endif
+                    ChatHistoryDao chatHistoryDao = new ChatHistoryDao(userMsg.uid, userMsg.uid);
+               
+                    if (user.username == null)
+                    {
+                        Task.Run(chatHistoryDao.CreateChatHistoryTable);
 
+                        MsgPush.Push("陌生人的消息", userMsg.msg);
+                    }
+                    else
+                    {
+                        MsgPush.Push($"{user.username}", userMsg.msg);
+                    }
+                    Task.Run(chatHistoryDao.InsertMsg);
+                    DisplayRecvMsg.Show(userMsg.msg);
+                    
+                    break;
+                case DataType.FILE:
+                    break;
             }
-            else
-            {
-#if ANDROID
-                MsgPush.Push($"{user.username}", userMsg.msg);
-#endif
-            }
-
-            Task.Run(chatHistoryDao.InsertMsg);
-            //DataType  dataType=(DataType)BitConverter.ToInt32(buf);
-            //switch (dataType)
-            //{
-            //    case DataType.TEXT:
-            //        userMsg=ParseMsgBuf.Parse(buf,len, address);
-            //        //MsgPush.Push("消息", userMsg.msg);
-            //        Console.WriteLine($"收到消息{userMsg.msg}");
-            //        break;
-            //    case DataType.FILE:
-            //        break;
-            //}
-            if(Global.GlobalVar.uidChatWith==user.uid)
-            {
-                DisplayRecvMsg.Show(userMsg.msg);
-            }
+         
         
 
         }

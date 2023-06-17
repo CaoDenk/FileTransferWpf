@@ -19,9 +19,9 @@ namespace p2pchat.Global
         public readonly static string FRIENDS_DB_PATH = $"{Environment.GetEnvironmentVariable("HOME")}/friends.db";
 
 #else
-        public readonly static string DOWNLOAD_PATH = "D://download";
-        public readonly static string FRIENDS_DB_PATH = "friends.db";
-        public readonly static string CHAT_HISTORY_DB_PATH = "D:";
+        public readonly static string DOWNLOAD_PATH = "D:/download";
+        public readonly static string FRIENDS_DB_PATH = "D:/friends.db";
+        public readonly static string CHAT_HISTORY_DB_PATH = "D:/chat_history.db";
 #endif
 
         public const int HEAD_LEN = 36;

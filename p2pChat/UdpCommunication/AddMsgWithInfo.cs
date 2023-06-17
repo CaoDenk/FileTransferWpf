@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace p2pchat.UdpCommunication
 {
     /// <summary>
-    /// 消息报文
+    /// 消息报文头
     /// 0..4  
     /// 4..36
     /// 
@@ -17,16 +17,16 @@ namespace p2pchat.UdpCommunication
     //const 
     class AddMsgWithInfo
     {
-       static byte[] TextBytes=>BitConverter.GetBytes((int)DataType.TEXT).ToArray().Reverse().ToArray();
+       //static byte[] TextBytes=>BitConverter.GetBytes((int)DataType.TEXT).ToArray().Reverse().ToArray();
 
         public static byte[] AddInfo(string msg)
         {
             byte[] msgBytes = Encoding.UTF8.GetBytes(msg);
             byte[] buf=new byte[msgBytes.Length+Config.HEAD_LEN];
-            Array.Copy(TextBytes, buf, 4);
-            Array.Copy(GlobalVar.uuidBytes, 0, buf, 4, 32);
 
-            
+            BitConverter.TryWriteBytes(buf, (int)DataType.TEXT);
+
+            Array.Copy(GlobalVar.uuidBytes, 0, buf, 4, 32);
 
             Array.Copy(msgBytes,0,buf, Config.HEAD_LEN,msgBytes.Length);
 

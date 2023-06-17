@@ -11,8 +11,7 @@
         <ShellContent
          
         Title="主页"
-        
-        
+         
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 

@@ -106,18 +106,24 @@ namespace p2pchat.Crud
                 using var connection = new SqliteConnection($"Data Source = {Config.FRIENDS_DB_PATH}");
                 connection.Open();
                 SqliteCommand sqliteCommand = connection.CreateCommand();
-                sqliteCommand.CommandText = $"select id,uid,username,alias from friends where uid='{uid}' limit 1";
+                sqliteCommand.CommandText = $"select id,username,alias from friends where uid='{uid}' limit 1";
 
                 using SqliteDataReader sqliteDataReader = sqliteCommand.ExecuteReader();
-                sqliteDataReader.Read();
+              
                 User user = new User();
-                user.id = sqliteDataReader.GetInt32(0);
-                user.uid = sqliteDataReader.GetString(1);
-                user.username = sqliteDataReader.GetString(2);
-                if (!sqliteDataReader.IsDBNull(3))
+                user.uid = uid;
+
+                if(sqliteDataReader.Read())
                 {
-                    user.alias = sqliteDataReader.GetString(3);
-                };
+                    user.id = sqliteDataReader.GetInt32(0);
+                    //user.uid = sqliteDataReader.GetString(1);
+                    user.username = sqliteDataReader.GetString(1);
+                    if (!sqliteDataReader.IsDBNull(2))
+                    {
+                        user.alias = sqliteDataReader.GetString(3);
+                    };
+                }
+              
                 return user;
                
             });

@@ -20,7 +20,7 @@ public partial class MainPage : ContentPage
 
     }
 
-    
+     
 
     private void NavigateToSettings(object sender, EventArgs e)
     {

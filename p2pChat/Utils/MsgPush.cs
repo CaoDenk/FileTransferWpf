@@ -1,10 +1,13 @@
-﻿using Plugin.LocalNotification;
+﻿
+using Plugin.LocalNotification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+#if WINDOWS
+using Windows.UI.Popups;
+#endif
 namespace p2pchat.Utils
 {
     internal class MsgPush
@@ -13,6 +16,9 @@ namespace p2pchat.Utils
 
         public static void Push(string title,string desp)
         {
+
+
+#if ANDROID
             var request = new NotificationRequest
             {
                 NotificationId = ++notificationId,
@@ -24,6 +30,12 @@ namespace p2pchat.Utils
 
             // Show the notification
             LocalNotificationCenter.Current.Show(request);
+
+#elif WINDOWS
+          
+            MessageDialog message = new MessageDialog(desp, title);
+            message.ShowAsync();
+#endif
         }
 
     }

@@ -73,12 +73,11 @@ public partial class Add : ContentPage
         else
 		{
             FriendsDao.InsertUser(queryUser);
-            //DisplayAlert("提示", "已添加到好友列表", "确定");
-            //      ISnackbar snackbar= Snackbar.Make("已添加到好友列表");
 
+            //DisplayAlert("提示", "已添加到好友列表", "确定");
+            //ISnackbar snackbar= Snackbar.Make("已添加到好友列表");
             //snackbar.Show();
             Toast.Make("添加成功").Show();
-
             //button.DisplaySnackbar("添加成功");
         }
 		

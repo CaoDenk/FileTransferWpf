@@ -23,7 +23,7 @@ namespace p2pchat.Dao
             using var connection = new SqliteConnection($"Data Source = {Config.CHAT_HISTORY_DB_PATH}");
             connection.Open();
             SqliteCommand sqliteCommand = connection.CreateCommand();
-            sqliteCommand.CommandText = $"create table  if not exists {uid} (id INTEGER primary key autoincrement,int type default 0,content text )";
+            sqliteCommand.CommandText = $"create table  if not exists {uid} (id INTEGER primary key autoincrement, type INTEGER ,content text )";
             sqliteCommand.ExecuteNonQuery();
            
 

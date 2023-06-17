@@ -14,18 +14,8 @@ namespace p2pchat.UdpCommunication
 
         public static void Show(string msg)
         {
-            App.Current.Dispatcher.Dispatch(
-                () =>
-                {
-                    chatDialog?.ShowMsg(msg, Color.FromRgb(0, 0, 255), LayoutOptions.Start);
-                }
-
-                );
-          
-            
+            Application.Current.Dispatcher.Dispatch(() =>chatDialog?.ShowMsg(msg, Color.FromRgb(0, 0, 255), LayoutOptions.Start));          
             //if(App.Current.MainPage)
-
-
         }
 
 

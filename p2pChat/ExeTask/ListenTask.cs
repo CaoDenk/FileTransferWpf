@@ -116,10 +116,10 @@ namespace p2pchat.ExeTask
 
 
 
-        public static void Init()
+        public static async void Init()
         {
 
-            Bind();
+            await Task.Run(Bind);
             Task.Run(Listen);
             Task.Run(ObersevIpv6);
 
